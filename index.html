@@ -2,762 +2,1551 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>RPAS OPS · Las Bambas</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#00d4ff">
+<meta name="theme-color" content="#C8102E">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="RPAS OPS">
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Space+Mono:wght@400;700&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#090e1a;--bg2:#0d1526;--bg3:#111d35;--card:#0f1a2e;
-  --border:#1e3356;--accent:#00d4ff;--accent2:#ff6b35;
-  --green:#00ff88;--yellow:#ffd60a;--red:#ff3355;
-  --text:#e8f4ff;--muted:#6b8aad;
+  --R:#C8102E; --R2:#E8112E; --Rd:#9E0B24; --Rlight:rgba(200,16,46,.08);
+  --W:#FFFFFF; --BG:#F4F5F7; --BG2:#ECEEF2; --S:#1A1D23;
+  --G1:#1A1D23; --G2:#3A3F4B; --G3:#6B7280; --G4:#9CA3AF; --G5:#D1D5DB; --G6:#F3F4F6;
+  --GRN:#00875A; --YLW:#F59E0B; --BLU:#2563EB; --ORG:#EA580C;
+  --SH1:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+  --SH2:0 4px 16px rgba(0,0,0,.1),0 2px 6px rgba(0,0,0,.06);
+  --SH3:0 10px 40px rgba(0,0,0,.12),0 4px 12px rgba(0,0,0,.08);
+  --RAD:12px; --RAD2:8px;
+  --HDR:60px; --TABS:52px;
+  --FONT:'DM Sans',sans-serif; --MONO:'DM Mono',monospace;
+  --SAT: env(safe-area-inset-top, 0px);
+  --SAB: env(safe-area-inset-bottom, 0px);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overflow:hidden}
-body{font-family:'Exo 2',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(0,80,160,.12),transparent 60%),radial-gradient(ellipse at 80% 80%,rgba(0,212,255,.06),transparent 50%);pointer-events:none;z-index:0}
+html,body{height:100%;overflow:hidden;font-family:var(--FONT)}
+body{background:var(--BG);color:var(--G1);display:flex;flex-direction:column}
 
-/* HEADER */
-.hdr{background:rgba(9,14,26,.98);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:100;position:relative}
-.hdr-brand{display:flex;align-items:center;gap:9px}
-.hdr-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),#0077bb);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;animation:glow 3s infinite}
-@keyframes glow{0%,100%{box-shadow:0 0 12px rgba(0,212,255,.3)}50%{box-shadow:0 0 28px rgba(0,212,255,.8)}}
-.hdr-title{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;letter-spacing:2px;color:var(--accent)}
-.hdr-sub{font-size:9px;color:var(--muted);letter-spacing:1px}
-.hdr-right{display:flex;gap:6px;align-items:center}
-.pill{display:flex;align-items:center;gap:4px;border-radius:20px;padding:4px 9px;font-size:10px;font-family:'Space Mono',monospace;cursor:pointer;transition:all .2s}
-.pill-sync{background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.25);color:var(--green)}
-.pill-sync.err{background:rgba(255,51,85,.08);border-color:rgba(255,51,85,.25);color:var(--red)}
-.pill-admin{background:rgba(107,138,173,.08);border:1px solid rgba(107,138,173,.2);color:var(--muted)}
-.pill-admin.on{background:rgba(255,107,53,.1);border-color:rgba(255,107,53,.4);color:var(--accent2)}
-.dot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:blink 1.5s infinite}
+/* ━━━ HEADER ━━━ */
+.hdr{
+  height:calc(var(--HDR) + var(--SAT));
+  padding-top:var(--SAT);
+  background:var(--W);
+  border-bottom:1px solid var(--G5);
+  display:flex;align-items:center;justify-content:space-between;
+  padding-left:16px;padding-right:16px;
+  flex-shrink:0;z-index:300;
+  box-shadow:var(--SH1);
+  position:relative;
+}
+.hdr::after{
+  content:'';position:absolute;bottom:-2px;left:0;width:100%;height:2px;
+  background:linear-gradient(90deg,var(--R),var(--R2),var(--R));
+}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-mark{
+  display:flex;align-items:center;gap:0;
+  background:var(--R);border-radius:6px;
+  overflow:hidden;
+}
+.brand-mmg{
+  background:var(--R);color:var(--W);
+  font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;
+  padding:7px 9px;line-height:1;
+}
+.brand-sep{width:1px;background:rgba(255,255,255,.25);height:28px;margin:0 0 0 0}
+.brand-lb{
+  background:var(--W);color:var(--R);
+  font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;padding:7px 9px;line-height:1.4;
+}
+.brand-lb span{display:block;color:var(--G4);font-size:8px;letter-spacing:1px}
+.app-name{
+  font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--G1);
+  line-height:1;
+}
+.app-name em{color:var(--R);font-style:normal}
+.app-sub{font-size:9px;color:var(--G4);font-weight:500;letter-spacing:1.5px;text-transform:uppercase;margin-top:1px}
+.hdr-actions{display:flex;align-items:center;gap:6px}
+.pill{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 11px;border-radius:20px;
+  font-family:var(--MONO);font-size:10px;font-weight:500;letter-spacing:.3px;
+  border:1.5px solid;cursor:pointer;transition:all .2s;
+  white-space:nowrap;
+}
+.pill-on{border-color:rgba(0,135,90,.3);background:rgba(0,135,90,.07);color:var(--GRN)}
+.pill-off{border-color:rgba(200,16,46,.3);background:rgba(200,16,46,.07);color:var(--R)}
+.pill-warn{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.07);color:var(--YLW)}
+.dot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.btn-lock{
+  display:flex;align-items:center;gap:5px;
+  padding:5px 11px;border-radius:20px;border:1.5px solid var(--G5);
+  background:var(--W);color:var(--G3);font-family:var(--FONT);font-size:10px;font-weight:600;
+  cursor:pointer;transition:all .2s;letter-spacing:.3px;
+}
+.btn-lock.on{border-color:rgba(200,16,46,.3);background:rgba(200,16,46,.05);color:var(--R)}
 
-/* TABS */
-.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;z-index:99}
-.tab{flex:1;padding:10px 2px;text-align:center;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:transparent;transition:all .2s;position:relative;text-transform:uppercase;font-family:'Rajdhani',sans-serif;font-size:12px}
-.tab.on{color:var(--accent)}
-.tab.on::after{content:'';position:absolute;bottom:0;left:15%;right:15%;height:2px;background:var(--accent);border-radius:2px 2px 0 0;box-shadow:0 0 6px var(--accent)}
-.tab-i{font-size:14px;display:block;margin-bottom:1px}
-
-/* SCREENS */
+/* ━━━ TABS ━━━ */
+.tabs{
+  height:var(--TABS);background:var(--W);
+  border-bottom:1px solid var(--G5);
+  display:flex;flex-shrink:0;z-index:200;
+  box-shadow:0 1px 0 var(--G5);
+}
+/* ━━━ SCREENS ━━━ */
 .screens{flex:1;overflow:hidden;position:relative}
-.screen{position:absolute;inset:0;overflow-y:auto;padding:12px;display:none;z-index:1}
+.screen{position:absolute;inset:0;overflow-y:auto;padding:14px 13px calc(36px + var(--SAB));display:none}
 .screen.on{display:block}
+.tab{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--G4);cursor:pointer;border:none;background:transparent;
+  transition:all .2s;position:relative;font-family:var(--FONT);
+}
+.tab.on{color:var(--R)}
+.tab.on::after{
+  content:'';position:absolute;bottom:0;left:20%;right:20%;
+  height:2px;background:var(--R);border-radius:2px 2px 0 0;
+}
+.tab svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.tab-badge{
+  position:absolute;top:6px;right:calc(50% - 20px);
+  min-width:15px;height:15px;background:var(--R);border-radius:8px;
+  font-size:8px;display:flex;align-items:center;justify-content:center;
+  color:#fff;padding:0 4px;font-family:var(--MONO);font-weight:500;
+}
 
-/* CARDS */
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;position:relative;overflow:hidden}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.35}
-.ct{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:7px}
 
-/* FIELDS */
-.fg{margin-bottom:11px}
-.fl{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;display:block}
-.fi,.fs{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-size:14px;font-family:'Exo 2',sans-serif;outline:none;transition:all .2s;-webkit-appearance:none}
-.fi:focus,.fs:focus{border-color:var(--accent);background:rgba(0,212,255,.05);box-shadow:0 0 0 2px rgba(0,212,255,.1)}
-.fs option{background:var(--bg3)}
-.fr{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+/* ━━━ SECTION LABELS ━━━ */
+.sec{
+  display:flex;align-items:center;gap:8px;
+  font-size:10px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;color:var(--G3);
+  margin-bottom:10px;margin-top:4px;
+}
+.sec-line{flex:1;height:1px;background:var(--G5)}
 
-/* RPA */
-.rpa-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}
-.rpa-opt{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px;cursor:pointer;text-align:center;transition:all .2s}
-.rpa-opt.on{border-color:var(--accent);background:rgba(0,212,255,.07)}
-.rpa-opt .ri{font-size:20px;margin-bottom:3px}
-.rpa-opt .rn{font-size:12px;font-weight:600;color:var(--text)}
+/* ━━━ ALERT ━━━ */
+.alert{
+  padding:11px 13px;margin-bottom:12px;font-size:12px;
+  display:flex;align-items:flex-start;gap:9px;line-height:1.6;
+  border-radius:var(--RAD2);border:1px solid;
+}
+.ai{background:#EFF6FF;border-color:#BFDBFE;color:#1E40AF}
+.aw{background:#FFFBEB;border-color:#FDE68A;color:#92400E}
+.ao{background:#ECFDF5;border-color:#A7F3D0;color:#065F46}
+.ar{background:#FEF2F2;border-color:#FECACA;color:#991B1B}
 
-/* BUTTONS */
-.btn-p{width:100%;padding:13px;border:none;border-radius:11px;background:linear-gradient(135deg,var(--accent),#0077bb);color:#000;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;cursor:pointer;text-transform:uppercase;box-shadow:0 3px 15px rgba(0,212,255,.3);transition:all .2s}
-.btn-p:disabled{opacity:.45;cursor:not-allowed}
-.btn-s{width:100%;padding:11px;border:1px solid var(--accent);border-radius:11px;background:transparent;color:var(--accent);font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-transform:uppercase}
-.btn-adm{width:100%;padding:13px;border:none;border-radius:11px;background:linear-gradient(135deg,var(--accent2),#bb3300);color:#fff;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;cursor:pointer;text-transform:uppercase}
-.btn-ok{padding:9px 13px;border:1px solid var(--green);border-radius:8px;background:rgba(0,255,136,.08);color:var(--green);font-size:12px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700}
-.btn-no{padding:9px 13px;border:1px solid var(--red);border-radius:8px;background:transparent;color:var(--red);font-size:12px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700}
-.btn-warn{padding:9px 13px;border:1px solid var(--yellow);border-radius:8px;background:rgba(255,214,10,.07);color:var(--yellow);font-size:12px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700}
-.btn-copy{padding:9px 13px;border:1px solid var(--accent);border-radius:8px;background:transparent;color:var(--accent);font-size:12px;cursor:pointer;font-family:'Exo 2',sans-serif}
+/* ━━━ CARD ━━━ */
+.card{
+  background:var(--W);border:1px solid var(--G5);
+  border-radius:var(--RAD);padding:16px;margin-bottom:12px;
+  box-shadow:var(--SH1);position:relative;overflow:hidden;
+}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--R)}
+.card-neutral::before{background:var(--G5)}
+.card-green::before{background:var(--GRN)}
+.card-ttl{
+  font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--G3);margin-bottom:14px;display:flex;align-items:center;gap:7px;
+}
+.card-ttl-icon{
+  width:28px;height:28px;border-radius:7px;background:var(--Rlight);
+  display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;
+}
 
-/* MSG */
-.msg{background:#0a1a0a;border:1px solid rgba(0,255,136,.2);border-radius:11px;padding:12px;font-family:'Space Mono',monospace;font-size:11px;line-height:1.9;color:#a8ffcc;white-space:pre-wrap;word-break:break-word}
+/* ━━━ FORM ━━━ */
+.fg{margin-bottom:13px}
+.fg:last-child{margin-bottom:0}
+.fl{
+  font-size:11px;font-weight:600;letter-spacing:.5px;
+  color:var(--G3);margin-bottom:6px;display:flex;align-items:center;gap:4px;
+}
+.req{color:var(--R);font-size:13px;line-height:1}
+.fi,.fs{
+  width:100%;background:var(--BG);border:1.5px solid var(--G5);
+  border-radius:var(--RAD2);padding:11px 13px;
+  color:var(--G1);font-size:14px;font-family:var(--FONT);
+  outline:none;transition:all .2s;-webkit-appearance:none;
+  font-weight:500;
+}
+.fi:focus,.fs:focus{border-color:var(--R);background:var(--W);box-shadow:0 0 0 3px var(--Rlight)}
+.fs option{background:var(--W);font-family:var(--FONT)}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-/* VUELO CARDS */
-.vc{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:13px;margin-bottom:9px;position:relative;overflow:hidden}
-.vc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:2px 0 0 2px}
-.vc.PENDIENTE::before{background:var(--yellow)}
-.vc.AUTORIZADO::before{background:var(--green)}
-.vc.RECHAZADO::before{background:var(--red)}
-.vc.CONCLUIDO::before{background:var(--muted)}
-.vh{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px}
-.vl{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;color:var(--text);letter-spacing:.5px}
-.vb{font-size:9px;font-weight:700;letter-spacing:1px;padding:3px 7px;border-radius:20px;text-transform:uppercase;font-family:'Space Mono',monospace}
-.bP{background:rgba(255,214,10,.12);color:var(--yellow);border:1px solid rgba(255,214,10,.3)}
-.bA{background:rgba(0,255,136,.12);color:var(--green);border:1px solid rgba(0,255,136,.3)}
-.bR{background:rgba(255,51,85,.12);color:var(--red);border:1px solid rgba(255,51,85,.3)}
-.bC{background:rgba(107,138,173,.12);color:var(--muted);border:1px solid rgba(107,138,173,.3)}
-.vm{display:grid;grid-template-columns:1fr 1fr;gap:3px;font-size:11px;color:var(--muted)}
-.vm span strong{color:var(--text)}
-.vf{display:flex;gap:5px;margin-top:9px;align-items:center;flex-wrap:wrap}
-.vp{flex:1;font-size:11px;color:var(--muted)}
-.vp strong{color:var(--accent);font-size:12px}
+/* ━━━ TIME PICKER ━━━ */
+.time-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.time-box{
+  background:var(--BG);border:1.5px solid var(--G5);border-radius:var(--RAD2);
+  overflow:hidden;transition:border-color .2s;
+}
+.time-box:focus-within{border-color:var(--R);background:var(--W);box-shadow:0 0 0 3px var(--Rlight)}
+.time-label-top{
+  font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--G4);padding:8px 12px 0;
+}
+.time-input{
+  width:100%;background:transparent;border:none;outline:none;
+  font-size:20px;font-family:var(--MONO);font-weight:500;color:var(--G1);
+  padding:2px 12px 10px;-webkit-appearance:none;
+}
+.time-input::-webkit-calendar-picker-indicator{
+  filter:invert(.3);cursor:pointer;width:18px;height:18px;
+}
 
-/* MAPA */
-#map-wrap{position:relative}
-#map{width:100%;height:calc(100vh - 185px);border-radius:14px;border:1px solid var(--border);overflow:hidden}
-.map-tb{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
-.mb{padding:7px 12px;border-radius:9px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--text);font-family:'Exo 2',sans-serif;display:flex;align-items:center;gap:4px;transition:all .2s}
-.mb.on{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.09)}
-.map-info{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:8px 12px;margin-top:8px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:7px}
-.gps-btn{position:absolute;bottom:20px;right:10px;z-index:1000;width:42px;height:42px;background:var(--card);border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,212,255,.3)}
-.gps-btn.tracking{background:rgba(0,212,255,.15);animation:glow 2s infinite}
+/* ━━━ DRONE SELECTOR ━━━ */
+.drone-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:4px}
+.drone-card{
+  border:1.5px solid var(--G5);border-radius:var(--RAD2);padding:10px 11px;
+  cursor:pointer;transition:all .2s;background:var(--BG);
+  display:flex;align-items:center;gap:8px;
+}
+.drone-card.on{border-color:var(--R);background:var(--Rlight)}
+.drone-card:hover:not(.on){border-color:var(--G3);background:var(--G6)}
+.drone-ico{font-size:18px;flex-shrink:0}
+.drone-info .dn{font-size:12px;font-weight:700;color:var(--G1);line-height:1.2}
+.drone-info .dm{font-size:10px;color:var(--G3);margin-top:1px}
+.drone-card.on .dn{color:var(--R)}
+.drone-card.on .dm{color:var(--Rd)}
 
-/* ADMIN */
-.adm-lock{background:rgba(255,107,53,.05);border:1px solid rgba(255,107,53,.25);border-radius:14px;padding:22px;text-align:center;margin-bottom:10px}
-.adm-icon{font-size:44px;margin-bottom:10px}
-.adm-title{font-family:'Rajdhani',sans-serif;font-size:19px;font-weight:700;letter-spacing:2px;color:var(--accent2);margin-bottom:6px}
-.adm-sub{font-size:12px;color:var(--muted);margin-bottom:18px;line-height:1.5}
-.adm-inp{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,107,53,.35);border-radius:9px;padding:13px;color:var(--text);font-size:17px;font-family:'Space Mono',monospace;outline:none;text-align:center;letter-spacing:4px;margin-bottom:10px}
-.adm-inp:focus{border-color:var(--accent2);box-shadow:0 0 0 2px rgba(255,107,53,.12)}
-.adm-bar{background:rgba(255,107,53,.07);border:1px solid rgba(255,107,53,.25);border-radius:9px;padding:9px 13px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
-.adm-bar-info{font-size:12px;color:var(--accent2);font-weight:700}
-.btn-out{padding:6px 12px;border:1px solid rgba(255,107,53,.35);border-radius:7px;background:transparent;color:var(--accent2);font-size:11px;cursor:pointer;font-family:'Exo 2',sans-serif}
+/* ━━━ CHECKLIST ━━━ */
+.cl-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 0;border-bottom:1px solid var(--G6);
+}
+.cl-item:last-child{border-bottom:none}
+.cl-lbl{font-size:13px;color:var(--G1);font-weight:500;flex:1;line-height:1.3}
+.cl-sub{font-size:11px;color:var(--G4);margin-top:2px}
+.tog{
+  width:46px;height:26px;border-radius:13px;background:var(--G5);
+  position:relative;cursor:pointer;transition:background .25s;
+  flex-shrink:0;border:none;margin-left:12px;
+}
+.tog.on{background:var(--GRN)}
+.tog::after{
+  content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;
+  border-radius:50%;background:var(--W);transition:transform .25s;
+  box-shadow:0 1px 4px rgba(0,0,0,.2);
+}
+.tog.on::after{transform:translateX(20px)}
 
-/* SYNC BAR */
-.sbar{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:var(--muted)}
-.sbtn{padding:4px 10px;border:1px solid var(--accent);border-radius:7px;background:transparent;color:var(--accent);font-size:11px;cursor:pointer}
+/* ━━━ STATUS BADGES ━━━ */
+.sc{
+  font-family:var(--MONO);font-size:9px;font-weight:500;
+  padding:3px 9px;border-radius:20px;letter-spacing:.3px;white-space:nowrap;
+}
+.scP{background:#FFFBEB;color:#92400E;border:1px solid #FDE68A}
+.scA{background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0}
+.scO{background:#FFF7ED;color:#9A3412;border:1px solid #FDBA74}
+.scD{background:#FEF2F2;color:#991B1B;border:1px solid #FECACA}
+.scC{background:var(--G6);color:var(--G3);border:1px solid var(--G5)}
 
-/* STATS */
-.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
-.sc{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:13px;text-align:center}
-.sn{font-family:'Space Mono',monospace;font-size:26px;font-weight:700;line-height:1}
-.sl{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:1px;text-transform:uppercase}
+/* ━━━ FLOW ━━━ */
+.flow{
+  display:flex;align-items:center;gap:4px;
+  padding:12px;background:var(--BG);border-radius:var(--RAD2);
+  margin-bottom:12px;overflow-x:auto;border:1px solid var(--G5);
+}
+.fl-s{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:52px}
+.fl-d{
+  width:32px;height:32px;border-radius:50%;border:2px solid var(--G5);
+  display:flex;align-items:center;justify-content:center;font-size:13px;
+  background:var(--W);transition:all .3s;
+}
+.fl-d.done{border-color:var(--GRN);background:var(--GRN);color:var(--W)}
+.fl-d.act{border-color:var(--R);background:var(--R);color:var(--W);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(200,16,46,.3)}70%{box-shadow:0 0 0 8px rgba(200,16,46,0)}}
+.fl-d.rej{border-color:var(--R);background:rgba(200,16,46,.06);color:var(--R)}
+.fl-l{font-size:9px;color:var(--G4);text-align:center;font-weight:600;letter-spacing:.3px;text-transform:uppercase;white-space:nowrap}
+.fl-line{flex:1;height:1px;background:var(--G5);min-width:8px}
+.fl-line.done{background:var(--GRN)}
 
-/* TOAST */
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(16px);padding:11px 18px;border-radius:11px;font-weight:700;font-size:13px;z-index:9999;opacity:0;transition:all .28s;white-space:nowrap;pointer-events:none;max-width:88vw;text-align:center}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast.ok{background:var(--green);color:#000;box-shadow:0 3px 16px rgba(0,255,136,.4)}
-.toast.err{background:var(--red);color:#fff;box-shadow:0 3px 16px rgba(255,51,85,.4)}
-.toast.inf{background:var(--accent);color:#000;box-shadow:0 3px 16px rgba(0,212,255,.4)}
+/* ━━━ VUELO CARDS ━━━ */
+.vc{
+  background:var(--W);border:1px solid var(--G5);border-radius:var(--RAD);
+  padding:14px;margin-bottom:10px;cursor:pointer;
+  transition:all .2s;box-shadow:var(--SH1);overflow:hidden;position:relative;
+}
+.vc:hover{box-shadow:var(--SH2);transform:translateY(-1px);border-color:var(--G4)}
+.vc:active{transform:scale(.99)}
+.vst{position:absolute;top:0;left:0;right:0;height:3px}
+.vst.PENDIENTE{background:var(--YLW)}
+.vst.APROBADO{background:var(--GRN)}
+.vst.OBSERVADO{background:var(--ORG)}
+.vst.DENEGADO{background:var(--R)}
+.vst.CONCLUIDO{background:var(--G4)}
+.v-place{font-size:15px;font-weight:700;color:var(--G1);margin-top:2px}
+.v-quad{font-size:11px;color:var(--G3);font-weight:500;margin-top:2px}
+.v-auth{font-size:10px;color:var(--GRN);font-weight:700;margin-top:1px;font-family:var(--MONO)}
+.v-meta{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:9px;font-size:11px;color:var(--G4)}
+.v-meta strong{color:var(--G2);font-weight:600}
+.v-foot{display:flex;align-items:center;justify-content:space-between;margin-top:9px;padding-top:9px;border-top:1px solid var(--G6)}
 
-/* MODAL */
-.mo{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;display:none;align-items:flex-end;backdrop-filter:blur(6px)}
+/* ━━━ BUTTONS ━━━ */
+.btn{
+  padding:13px 18px;border:none;border-radius:var(--RAD2);
+  font-family:var(--FONT);font-size:13px;font-weight:700;letter-spacing:.5px;
+  cursor:pointer;text-transform:uppercase;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.bw{width:100%}
+.bp{background:var(--R);color:var(--W);box-shadow:0 3px 10px rgba(200,16,46,.25)}
+.bp:hover{background:var(--R2)}
+.bg{background:var(--GRN);color:var(--W);box-shadow:0 3px 10px rgba(0,135,90,.2)}
+.br{background:var(--W);border:1.5px solid var(--R);color:var(--R)}
+.bgh{background:var(--W);border:1.5px solid var(--G5);color:var(--G2)}
+.bsm{padding:9px 14px;font-size:11px}
+
+/* ━━━ SYNC BAR ━━━ */
+.sbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 13px;background:var(--W);border:1px solid var(--G5);
+  border-radius:var(--RAD2);margin-bottom:12px;font-size:11px;color:var(--G3);font-weight:500;
+  box-shadow:var(--SH1);
+}
+.srefresh{
+  padding:4px 11px;border:1px solid var(--G5);border-radius:6px;
+  background:var(--BG);color:var(--G3);font-size:10px;font-weight:700;
+  cursor:pointer;font-family:var(--FONT);letter-spacing:.5px;text-transform:uppercase;
+}
+
+/* ━━━ FILTER ROW ━━━ */
+.frow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.ftag{
+  padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;
+  cursor:pointer;border:1.5px solid var(--G5);background:var(--W);
+  color:var(--G3);font-family:var(--FONT);transition:all .2s;
+}
+.ftag.on{border-color:var(--R);color:var(--R);background:var(--Rlight)}
+.ftag:hover:not(.on){border-color:var(--G3)}
+
+/* ━━━ MAP ━━━ */
+.map-wrap{border-radius:var(--RAD);overflow:hidden;border:1px solid var(--G5);box-shadow:var(--SH1)}
+#map-frame{
+  width:100%;height:calc(100vh - var(--HDR) - var(--TABS) - 130px);
+  border:none;
+}
+.map-tb{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.mtag{
+  padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;
+  cursor:pointer;border:1.5px solid var(--G5);background:var(--W);
+  color:var(--G3);font-family:var(--FONT);transition:all .2s;
+}
+.mtag.on{border-color:var(--R);color:var(--R);background:var(--Rlight)}
+.map-footer{
+  margin-top:8px;padding:9px 13px;background:var(--W);
+  border:1px solid var(--G5);border-radius:var(--RAD2);
+  font-size:11px;color:var(--G3);font-weight:500;
+  display:flex;align-items:center;gap:7px;
+}
+
+/* ━━━ STATS ━━━ */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.stat-box{
+  background:var(--W);border:1px solid var(--G5);border-radius:var(--RAD);
+  padding:14px 13px;text-align:center;box-shadow:var(--SH1);
+  position:relative;overflow:hidden;
+}
+.stat-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.st1::before{background:var(--R)}.st2::before{background:var(--YLW)}
+.st3::before{background:var(--GRN)}.st4::before{background:var(--G4)}
+.stat-n{font-size:32px;font-weight:700;line-height:1;font-family:var(--MONO)}
+.stat-l{font-size:10px;color:var(--G4);margin-top:3px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+
+/* ━━━ ADMIN GATE ━━━ */
+.gate-wrap{max-width:400px;margin:0 auto;padding-top:10px}
+.gate{
+  background:var(--W);border:1px solid var(--G5);border-radius:var(--RAD);
+  padding:28px 22px;text-align:center;box-shadow:var(--SH2);overflow:hidden;position:relative;
+}
+.gate::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--R)}
+.gate-emblem{
+  width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--R),var(--Rd));
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 16px;box-shadow:0 4px 16px rgba(200,16,46,.3);font-size:28px;
+}
+.gate-title{
+  font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;
+  color:var(--G1);margin-bottom:4px;
+}
+.gate-sub{font-size:12px;color:var(--G3);margin-bottom:22px;line-height:1.7}
+.gate-inp{
+  width:100%;background:var(--BG);border:1.5px solid var(--G5);
+  border-radius:var(--RAD2);padding:14px;color:var(--G1);
+  font-size:22px;font-family:var(--MONO);font-weight:500;
+  outline:none;text-align:center;letter-spacing:6px;
+  margin-bottom:12px;transition:all .2s;
+}
+.gate-inp:focus{border-color:var(--R);background:var(--W);box-shadow:0 0 0 3px var(--Rlight)}
+.admin-bar{
+  background:linear-gradient(135deg,#FEF2F2,#FFF5F5);
+  border:1px solid rgba(200,16,46,.15);border-radius:var(--RAD2);
+  padding:10px 14px;margin-bottom:12px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.admin-bar-l{font-size:11px;color:var(--R);font-weight:700;display:flex;align-items:center;gap:7px;letter-spacing:.3px}
+
+/* ━━━ MODAL ━━━ */
+.mo{
+  position:fixed;inset:0;background:rgba(26,29,35,.6);
+  z-index:800;display:none;align-items:flex-end;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+}
 .mo.open{display:flex}
-.md{width:100%;background:var(--bg2);border-radius:22px 22px 0 0;border:1px solid var(--border);padding:18px;max-height:88vh;overflow-y:auto;animation:up .3s ease}
-@keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.mh{width:38px;height:3px;background:var(--border);border-radius:2px;margin:0 auto 14px;display:block}
-.mt{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;letter-spacing:2px;color:var(--accent);margin-bottom:14px;text-transform:uppercase}
+.md{
+  width:100%;background:var(--W);
+  border-radius:20px 20px 0 0;
+  border-top:3px solid var(--R);
+  padding:20px 16px 24px;max-height:92vh;overflow-y:auto;
+  animation:mup .28s cubic-bezier(.16,1,.3,1);
+}
+@keyframes mup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.handle{width:36px;height:4px;background:var(--G5);border-radius:2px;margin:0 auto 18px}
+.md-ttl{font-size:18px;font-weight:700;color:var(--G1);margin-bottom:14px}
+.md-ttl span{color:var(--R)}
 
-/* SPINNER */
-.spin-wrap{text-align:center;padding:28px;color:var(--muted)}
-.spin{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 10px}
+/* ━━━ TOAST ━━━ */
+.toast{
+  position:fixed;bottom:20px;left:50%;
+  transform:translateX(-50%) translateY(14px);
+  padding:11px 18px;border-radius:var(--RAD2);
+  font-weight:700;font-size:12px;z-index:9999;opacity:0;
+  transition:all .26s cubic-bezier(.16,1,.3,1);
+  pointer-events:none;max-width:88vw;text-align:center;
+  font-family:var(--FONT);letter-spacing:.3px;
+  display:flex;align-items:center;gap:8px;
+  box-shadow:var(--SH3);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.tok{background:var(--GRN);color:var(--W)}
+.terr{background:var(--R);color:var(--W)}
+.tinf{background:var(--G1);color:var(--W)}
+.twarn{background:var(--YLW);color:var(--G1)}
+
+/* ━━━ SPINNER ━━━ */
+.spin-wrap{text-align:center;padding:36px;color:var(--G4)}
+.spin{width:28px;height:28px;border:2px solid var(--G5);border-top-color:var(--R);border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 12px}
 @keyframes sp{to{transform:rotate(360deg)}}
-.empty{text-align:center;padding:36px;color:var(--muted)}
+.empty-state{text-align:center;padding:36px 20px;color:var(--G4)}
+.empty-icon{font-size:44px;margin-bottom:12px;opacity:.5}
+.empty-txt{font-size:13px;font-weight:600;color:var(--G3)}
+.empty-sub{font-size:12px;color:var(--G4);margin-top:4px}
 
-/* GPS dot on map */
-.gps-marker{width:16px;height:16px;background:var(--accent);border:3px solid white;border-radius:50%;box-shadow:0 0 0 4px rgba(0,212,255,.3),0 0 12px rgba(0,212,255,.6)}
-.gps-acc{border-radius:50%;background:rgba(0,212,255,.12);border:1px solid rgba(0,212,255,.3)}
+/* ━━━ SCROLL ━━━ */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--G5);border-radius:2px}
 
-::-webkit-scrollbar{width:3px}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+/* ━━━ IA CHIPS ━━━ */
+.pchip{
+  padding:8px 6px;border-radius:var(--RAD2);border:1.5px solid var(--G5);
+  background:var(--W);color:var(--G3);font-size:12px;font-weight:700;
+  text-align:center;cursor:pointer;transition:all .18s;font-family:var(--FONT);
+}
+.pchip.on{border-color:var(--R);background:var(--Rlight);color:var(--R)}
+.pchip:hover:not(.on){border-color:var(--G3);color:var(--G1)}
+
+/* ━━━ ZONA ROW ━━━ */
+.zona-row{
+  display:grid;grid-template-columns:1fr auto auto auto;
+  align-items:center;gap:8px;
+  padding:11px 14px;border-bottom:1px solid var(--G6);font-size:12px;
+}
+.zona-row:last-child{border-bottom:none}
+.zona-name{font-weight:700;color:var(--G1)}
+.zona-bar-wrap{width:60px;height:5px;background:var(--G5);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle}
+.zona-bar{height:100%;background:var(--R);border-radius:3px;transition:width .6s ease}
+.zona-count{font-family:var(--MONO);font-size:11px;font-weight:500;color:var(--G2);min-width:20px;text-align:right}
+.zona-time{font-family:var(--MONO);font-size:10px;color:var(--G3);min-width:50px;text-align:right}
+
+/* ━━━ METRIC MINI ━━━ */
+.metric-mini{
+  background:var(--W);border:1px solid var(--G5);border-radius:var(--RAD2);
+  padding:11px 10px;text-align:center;box-shadow:var(--SH1);
+}
+.metric-mini-n{font-family:var(--MONO);font-size:22px;font-weight:700;line-height:1}
+.metric-mini-l{font-size:9px;color:var(--G4);margin-top:3px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+
+/* ━━━ IA TEXT FORMATTING ━━━ */
+.ia-section{margin-bottom:16px}
+.ia-section-title{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--R);margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--G5)}
+.ia-para{font-size:13px;line-height:1.85;color:var(--G1);margin-bottom:8px}
+.ia-bullet{font-size:12px;line-height:1.8;color:var(--G2);padding-left:14px;position:relative;margin-bottom:4px}
+.ia-bullet::before{content:'▸';position:absolute;left:0;color:var(--R);font-size:11px}
+.ia-highlight{background:rgba(200,16,46,.06);border-left:3px solid var(--R);padding:9px 12px;border-radius:0 var(--RAD2) var(--RAD2) 0;margin:10px 0;font-size:12px;color:var(--G1)}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
+<!-- ━━━━━ HEADER ━━━━━ -->
 <div class="hdr">
-  <div class="hdr-brand">
-    <div class="hdr-icon">🚁</div>
+  <div class="brand">
+    <div class="brand-mark">
+      <div class="brand-mmg">MMG</div>
+      <div class="brand-sep"></div>
+      <div class="brand-lb">LAS BAMBAS<span>MINERA · PERÚ</span></div>
+    </div>
     <div>
-      <div class="hdr-title">RPAS OPS</div>
-      <div class="hdr-sub">LAS BAMBAS · MINERA</div>
+      <div class="app-name">RPAS <em>OPS</em></div>
+      <div class="app-sub">GGO-PI-PG-003</div>
     </div>
   </div>
-  <div class="hdr-right">
-    <div class="pill pill-sync" id="pill-conn"><div class="dot"></div><span id="conn-txt">SYNC</span></div>
-    <div class="pill pill-admin" id="pill-adm" onclick="goTab('admin')">🔒 ADMIN</div>
+  <div class="hdr-actions">
+    <div class="pill pill-on" id="pill-conn"><span class="dot"></span><span id="conn-txt">ONLINE</span></div>
+    <button class="btn-lock" id="btn-lock" onclick="goTab('control')">🔒 Control</button>
   </div>
 </div>
 
-<!-- TABS -->
+<!-- ━━━━━ TABS ━━━━━ -->
 <div class="tabs">
-  <button class="tab on" onclick="goTab('reg',this)"><span class="tab-i">📋</span>Registro</button>
-  <button class="tab" onclick="goTab('vuelos',this)"><span class="tab-i">📡</span>Vuelos</button>
-  <button class="tab" onclick="goTab('mapa',this)"><span class="tab-i">🗺️</span>Mapa</button>
-  <button class="tab" onclick="goTab('admin',this)"><span class="tab-i">🔐</span>Admin</button>
+  <button class="tab on" id="t0" onclick="goTab('plan',this)">
+    <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+    Plan
+  </button>
+  <button class="tab" id="t1" onclick="goTab('vuelos',this)">
+    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    Vuelos
+    <span class="tab-badge" id="tb-pend" style="display:none">0</span>
+  </button>
+  <button class="tab" id="t2" onclick="goTab('checklist',this)">
+    <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    Checklist
+  </button>
+  <button class="tab" id="t3" onclick="goTab('mapa',this)">
+    <svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+    Mapa
+  </button>
+  <button class="tab" id="t4" onclick="goTab('control',this)">
+    <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    Control
+  </button>
+  <button class="tab" id="t5" onclick="goTab('ia',this)" style="display:none">
+    <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 010 2h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 010-2h1a7 7 0 017-7h1V5.73A2 2 0 0110 4a2 2 0 012-2z"/></svg>
+    IA
+  </button>
 </div>
 
-<!-- SCREENS -->
+<!-- ━━━━━ SCREENS ━━━━━ -->
 <div class="screens">
 
-  <!-- ══ REGISTRO ══ -->
-  <div class="screen on" id="s-reg">
+<!-- ═══ PLAN DE VUELO ═══ -->
+<div class="screen on" id="s-plan">
 
-    <div class="card">
-      <div class="ct">📍 Ubicación</div>
-      <div class="fg">
-        <label class="fl">Lugar / Tajo</label>
-        <select class="fs" id="lugar" onchange="lugarChg();mkMsg()">
-          <option value="">— Seleccionar —</option>
-          <option>TAJO FERROBAMBA</option>
-          <option>TAJO CHALCOBAMBA</option>
-          <option>TAJO SULFOBAMBA</option>
-          <option>BOTADERO NORTE</option>
-          <option>BOTADERO SUR</option>
-          <option>PLANTA CONCENTRADORA</option>
-          <option>RELAVERA</option>
-          <option value="OTRO">Otro...</option>
-        </select>
-      </div>
-      <div class="fg" id="otro-w" style="display:none">
-        <label class="fl">Especificar</label>
-        <input class="fi" id="lugar-o" placeholder="Escribir lugar..." oninput="mkMsg()">
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="ct">📅 Fecha y Hora</div>
-      <div class="fg">
-        <label class="fl">Fecha</label>
-        <input type="date" class="fi" id="fecha" oninput="mkMsg()">
-      </div>
-      <div class="fr">
-        <div class="fg"><label class="fl">Hora Inicio</label><input type="time" class="fi" id="hi" oninput="mkMsg()"></div>
-        <div class="fg"><label class="fl">Hora Fin</label><input type="time" class="fi" id="hf" oninput="mkMsg()"></div>
-      </div>
-      <div class="fg">
-        <label class="fl">Altura de Vuelo (m)</label>
-        <input type="number" class="fi" id="alt" placeholder="Ej: 250" oninput="mkMsg()">
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="ct">🚁 Aeronave RPA</div>
-      <div class="rpa-grid">
-        <div class="rpa-opt on" onclick="selRPA(this,'Matrice M300 RTK')"><div class="ri">🔵</div><div class="rn">M300 RTK</div></div>
-        <div class="rpa-opt" onclick="selRPA(this,'Mavic 3E')"><div class="ri">🟢</div><div class="rn">Mavic 3E</div></div>
-        <div class="rpa-opt" onclick="selRPA(this,'Phantom 4 RTK')"><div class="ri">⚪</div><div class="rn">Phantom 4</div></div>
-        <div class="rpa-opt" onclick="selRPA(this,'Otro')"><div class="ri">➕</div><div class="rn">Otro</div></div>
-      </div>
-      <div class="fg"><label class="fl">Número de Serie</label><input class="fi" id="serie" placeholder="Ej: 1ZNBL2800C00JM/..." oninput="mkMsg()"></div>
-      <div class="fg">
-        <label class="fl">Tipo de Misión</label>
-        <select class="fs" id="mision" onchange="mkMsg()">
-          <option>fotogrametría</option><option>inspección</option>
-          <option>topografía</option><option>supervisión</option><option>seguridad</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="ct">👨‍✈️ Piloto(s)</div>
-      <div class="fg"><label class="fl">Piloto Principal</label><input class="fi" id="p1" placeholder="Nombre completo" oninput="mkMsg()"></div>
-      <div class="fg"><label class="fl">DNI Piloto Principal</label><input type="number" class="fi" id="d1" placeholder="Número de DNI" oninput="mkMsg()"></div>
-      <div class="fg"><label class="fl">Co-Piloto (opcional)</label><input class="fi" id="p2" placeholder="Nombre completo" oninput="mkMsg()"></div>
-      <div class="fg"><label class="fl">DNI Co-Piloto</label><input type="number" class="fi" id="d2" placeholder="Número de DNI" oninput="mkMsg()"></div>
-      <div class="fg">
-        <label class="fl">Gerencia</label>
-        <select class="fs" id="ger" onchange="mkMsg()">
-          <option>SS-TT</option><option>PI</option><option>OPERACIONES</option>
-          <option>MINA</option><option>MEDIO AMBIENTE</option><option>SEGURIDAD</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="ct">💬 Vista Previa Mensaje</div>
-      <div class="msg" id="msg-pre" style="color:var(--muted)">// Complete los campos para generar el mensaje...</div>
-      <div style="display:flex;gap:7px;margin-top:10px">
-        <button class="btn-s" onclick="copyMsg()" style="flex:1">📋 Copiar</button>
-        <button class="btn-p" id="btn-reg" onclick="submit()" style="flex:2">✈️ REGISTRAR</button>
-      </div>
-    </div>
-
-    <div style="height:20px"></div>
+  <div class="alert ai">
+    <span style="font-size:15px;flex-shrink:0">ℹ</span>
+    <div>Todo vuelo requiere aprobación del <strong>Centro de Control</strong>. Solicitar con mínimo <strong>2 horas</strong> de anticipación — 12h para misiones especiales. <em style="font-size:11px">§6.2</em></div>
   </div>
 
-  <!-- ══ VUELOS ══ -->
-  <div class="screen" id="s-vuelos">
-    <div class="sbar">
-      <span id="sync-lbl">Cargando...</span>
-      <button class="sbtn" onclick="loadVuelos()">🔄 Actualizar</button>
+  <!-- Lugar -->
+  <div class="sec"><span>Ubicación</span><span class="sec-line"></span></div>
+  <div class="card">
+    <div class="card-ttl"><div class="card-ttl-icon">📍</div>Lugar y Cuadrante de Operación</div>
+    <div class="fg">
+      <label class="fl">Lugar / Tajo <span class="req">*</span></label>
+      <select class="fs" id="lugar" onchange="lugarChg()">
+        <option value="">— Seleccionar zona operativa —</option>
+        <option>TAJO FERROBAMBA</option><option>TAJO CHALCOBAMBA</option>
+        <option>TAJO SULFOBAMBA</option><option>BOTADERO NORTE</option>
+        <option>BOTADERO SUR</option><option>PLANTA CONCENTRADORA</option>
+        <option>RELAVERA</option><option>NUEVA HUANCUIRE</option>
+        <option value="OTRO">Otro (especificar)…</option>
+      </select>
     </div>
-    <div id="vuelos-list"><div class="spin-wrap"><div class="spin"></div>Conectando con Google Sheets...</div></div>
-    <div style="height:20px"></div>
-  </div>
-
-  <!-- ══ MAPA ══ -->
-  <div class="screen" id="s-mapa">
-    <div class="map-tb">
-      <button class="mb on" id="mb-poly" onclick="mTool('poly')">✏️ Zona</button>
-      <button class="mb" id="mb-circ" onclick="mTool('circ')">⭕ Círculo</button>
-      <button class="mb" onclick="clearMap()">🗑️ Limpiar</button>
-      <button class="mb" id="mb-sat" onclick="togSat()">🛰️ Satélite</button>
-      <button class="mb" id="mb-gps" onclick="startGPS()">📍 Mi GPS</button>
+    <div class="fg" id="otro-w" style="display:none">
+      <label class="fl">Especificar ubicación</label>
+      <input class="fi" id="lugar-o" placeholder="Nombre del área o sector…">
     </div>
-    <div id="map-wrap">
-      <div id="map"></div>
-      <div class="gps-btn" id="gps-fab" onclick="centerGPS()" title="Centrar en mi ubicación">📍</div>
-    </div>
-    <div class="map-info"><span>💡</span><span id="map-hint">Activa <strong>Mi GPS</strong> para verte en el mapa, luego dibuja la zona de sobrevuelo</span></div>
-    <div style="height:20px"></div>
-  </div>
-
-  <!-- ══ ADMIN ══ -->
-  <div class="screen" id="s-admin">
-    <div id="adm-lock">
-      <div class="adm-lock">
-        <div class="adm-icon">🔐</div>
-        <div class="adm-title">PANEL ADMINISTRADOR</div>
-        <div class="adm-sub">Solo el administrador puede autorizar,<br>rechazar o eliminar vuelos registrados.</div>
-        <input type="password" class="adm-inp" id="adm-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')admLogin()">
-        <button class="btn-adm" onclick="admLogin()">🔓 INGRESAR AL PANEL</button>
-      </div>
-    </div>
-
-    <div id="adm-open" style="display:none">
-      <div class="adm-bar">
-        <div class="adm-bar-info">🟠 MODO ADMINISTRADOR ACTIVO</div>
-        <button class="btn-out" onclick="admOut()">🔒 Salir</button>
-      </div>
-      <div class="sbar">
-        <span id="adm-lbl">Cargando...</span>
-        <button class="sbtn" onclick="loadVuelos(true)">🔄 Actualizar</button>
-      </div>
-      <div id="adm-list"><div class="spin-wrap"><div class="spin"></div>Cargando...</div></div>
-      <div class="card" style="border-color:rgba(255,51,85,.2);margin-top:8px">
-        <div class="ct" style="color:var(--red)">⚠️ Zona Peligro</div>
-        <button class="btn-no" style="width:100%;padding:12px" onclick="delAll()">🗑️ Borrar TODOS los registros</button>
-      </div>
-      <div style="height:20px"></div>
+    <div class="fg">
+      <label class="fl">Cuadrante de vuelo <span class="req">*</span></label>
+      <select class="fs" id="cuadrante">
+        <option value="">— Según mapa de cuadrantes vigente —</option>
+        <option>CUADRANTE A1</option><option>CUADRANTE A2</option><option>CUADRANTE A3</option>
+        <option>CUADRANTE B1</option><option>CUADRANTE B2</option><option>CUADRANTE B3</option>
+        <option>CUADRANTE C1</option><option>CUADRANTE C2</option><option>CUADRANTE C3</option>
+        <option>CUADRANTE D1</option><option>CUADRANTE D2</option><option>CUADRANTE D3</option>
+      </select>
     </div>
   </div>
+
+  <!-- Tiempo -->
+  <div class="sec"><span>Ventana de Vuelo</span><span class="sec-line"></span></div>
+  <div class="card">
+    <div class="card-ttl"><div class="card-ttl-icon">🗓</div>Fecha y Horario</div>
+    <div class="fg">
+      <label class="fl">Fecha de operación <span class="req">*</span></label>
+      <input type="date" class="fi" id="fecha">
+    </div>
+    <div class="fg">
+      <label class="fl">Ventana horaria <span class="req">*</span></label>
+      <div class="time-grid">
+        <div class="time-box">
+          <div class="time-label-top">Hora inicio</div>
+          <input type="time" class="time-input" id="hi">
+        </div>
+        <div class="time-box">
+          <div class="time-label-top">Hora fin</div>
+          <input type="time" class="time-input" id="hf">
+        </div>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl">Altura máxima de vuelo</label>
+      <select class="fs" id="alt">
+        <option value="">— Seleccionar altitud —</option>
+        <option value="50">50 m — Inspección visual cercana</option>
+        <option value="100">100 m — Reconocimiento estándar</option>
+        <option value="120">120 m — Límite regulatorio DGAC</option>
+        <option value="150">150 m — Fotogrametría media</option>
+        <option value="200">200 m — Topografía amplia</option>
+        <option value="250">250 m — Levantamiento extenso</option>
+        <option value="300">300 m — Misión especial autorizada</option>
+        <option value="otro">Otra altitud (especificar)</option>
+      </select>
+    </div>
+    <div class="fg" id="alt-otro-w" style="display:none">
+      <label class="fl">Altitud específica (metros)</label>
+      <input type="number" class="fi" id="alt-otro" placeholder="Ej: 180">
+    </div>
+  </div>
+
+  <!-- Drone -->
+  <div class="sec"><span>Aeronave RPAS</span><span class="sec-line"></span></div>
+  <div class="card">
+    <div class="card-ttl"><div class="card-ttl-icon">🚁</div>Selección de Aeronave</div>
+    <div class="fg">
+      <label class="fl">Modelo de RPA <span class="req">*</span></label>
+      <div class="drone-grid" id="drone-grid">
+        <div class="drone-card on" onclick="selDrone(this,'DJI Matrice M300 RTK')"><span class="drone-ico">🚁</span><div class="drone-info"><div class="dn">M300 RTK</div><div class="dm">DJI · 6.3 kg</div></div></div>
+        <div class="drone-card" onclick="selDrone(this,'DJI Matrice M350 RTK')"><span class="drone-ico">🚁</span><div class="drone-info"><div class="dn">M350 RTK</div><div class="dm">DJI · 6.47 kg</div></div></div>
+        <div class="drone-card" onclick="selDrone(this,'DJI Mavic 3E')"><span class="drone-ico">🚁</span><div class="drone-info"><div class="dn">Mavic 3E</div><div class="dm">DJI · 915 g</div></div></div>
+        <div class="drone-card" onclick="selDrone(this,'DJI Mavic 3T')"><span class="drone-ico">🔭</span><div class="drone-info"><div class="dn">Mavic 3T</div><div class="dm">DJI Thermal · 920 g</div></div></div>
+        <div class="drone-card" onclick="selDrone(this,'DJI Phantom 4 RTK')"><span class="drone-ico">🚁</span><div class="drone-info"><div class="dn">Phantom 4 RTK</div><div class="dm">DJI · 1.39 kg</div></div></div>
+        <div class="drone-card" onclick="selDrone(this,'DJI Zenmuse L2')"><span class="drone-ico">📡</span><div class="drone-info"><div class="dn">Zenmuse L2</div><div class="dm">LiDAR · M350</div></div></div>
+        <div class="drone-card" onclick="selDrone(this,'Parrot ANAFI USA')"><span class="drone-ico">🚁</span><div class="drone-info"><div class="dn">ANAFI USA</div><div class="dm">Parrot · 500 g</div></div></div>
+        <div class="drone-card" onclick="selDrone(this,'Autel EVO II Pro')"><span class="drone-ico">🚁</span><div class="drone-info"><div class="dn">EVO II Pro</div><div class="dm">Autel · 1.15 kg</div></div></div>
+        <div class="drone-card" onclick="selDrone(this,'Skydio 2+')"><span class="drone-ico">🚁</span><div class="drone-info"><div class="dn">Skydio 2+</div><div class="dm">Skydio · 800 g</div></div></div>
+        <div class="drone-card" onclick="selDrone(this,'Wingtra One GEN II')"><span class="drone-ico">✈</span><div class="drone-info"><div class="dn">Wingtra GEN II</div><div class="dm">VTOL · 3.7 kg</div></div></div>
+        <div class="drone-card" onclick="selDrone(this,'senseFly eBee X')"><span class="drone-ico">✈</span><div class="drone-info"><div class="dn">eBee X</div><div class="dm">senseFly · 1.6 kg</div></div></div>
+        <div class="drone-card" onclick="selDrone(this,'Otro modelo')"><span class="drone-ico">⚙</span><div class="drone-info"><div class="dn">Otro modelo</div><div class="dm">Especificar</div></div></div>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl">Número de serie <span class="req">*</span></label>
+      <input class="fi" id="serie" placeholder="Ej: 1ZNBL2800C00JM">
+    </div>
+    <div class="fg">
+      <label class="fl">Objetivo / Misión <span class="req">*</span></label>
+      <select class="fs" id="mision">
+        <option>Fotogrametría</option><option>Inspección visual</option>
+        <option>Topografía y levantamiento</option><option>Supervisión de operaciones</option>
+        <option>Monitoreo ambiental</option><option>Seguridad perimetral</option>
+        <option>Levantamiento volumétrico</option><option>Termografía</option>
+        <option>LiDAR / Nube de puntos</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Piloto -->
+  <div class="sec"><span>Personal Acreditado</span><span class="sec-line"></span></div>
+  <div class="card">
+    <div class="card-ttl"><div class="card-ttl-icon">👷</div>Piloto(s) RPAS</div>
+    <div class="alert aw" style="margin-bottom:14px">
+      <span style="font-size:14px;flex-shrink:0">⚠</span>
+      <div style="font-size:11px">Piloto debe contar con <strong>licencia DGAC (MTC)</strong> y <strong>licencia interna Gestión Vial MLB</strong> vigentes y actualizadas en Web Control. §6.3</div>
+    </div>
+    <div class="fg"><label class="fl">Piloto principal <span class="req">*</span></label><input class="fi" id="p1" placeholder="Apellidos y nombres completos"></div>
+    <div class="fr2">
+      <div class="fg"><label class="fl">DNI <span class="req">*</span></label><input type="number" class="fi" id="d1" placeholder="Número de DNI"></div>
+      <div class="fg"><label class="fl">Código piloto RPAS</label><input class="fi" id="cod1" placeholder="P-XXXX-XXX"></div>
+    </div>
+    <div class="fg"><label class="fl">Celular de contacto <span class="req">*</span></label><input type="tel" class="fi" id="cel" placeholder="+51 999 999 999"></div>
+    <div class="fg"><label class="fl">Co-piloto / Observador</label><input class="fi" id="p2" placeholder="Apellidos y nombres (opcional)"></div>
+    <div class="fg"><label class="fl">DNI co-piloto</label><input type="number" class="fi" id="d2" placeholder="Número de DNI"></div>
+  </div>
+
+  <!-- Empresa -->
+  <div class="sec"><span>Empresa y Área</span><span class="sec-line"></span></div>
+  <div class="card">
+    <div class="card-ttl"><div class="card-ttl-icon">🏢</div>Datos Organizacionales</div>
+    <div class="fg">
+      <label class="fl">Empresa <span class="req">*</span></label>
+      <select class="fs" id="empresa" onchange="empresaChg()">
+        <option value="MINERA LAS BAMBAS">MINERA LAS BAMBAS (MMG)</option>
+        <option value="CONTRATISTA">Empresa Contratista</option>
+      </select>
+    </div>
+    <div class="fg" id="contra-w" style="display:none">
+      <label class="fl">Nombre del contratista</label>
+      <input class="fi" id="contra-n" placeholder="Razón social completa">
+    </div>
+    <div class="fg">
+      <label class="fl">Gerencia / Área <span class="req">*</span></label>
+      <select class="fs" id="gerencia">
+        <option>SS-TT · Servicios Técnicos</option><option>PI · Planeamiento e Ingeniería</option>
+        <option>Operaciones Mina</option><option>Medio Ambiente</option>
+        <option>Seguridad y Salud Ocupacional</option><option>Gestión Vial</option>
+        <option>Protección Interna</option><option>Centro de Control</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="btn bp bw" id="btn-reg" onclick="submitVuelo()" style="margin-bottom:6px">
+    ✈ ENVIAR SOLICITUD AL CENTRO DE CONTROL
+  </button>
+  <div style="height:24px"></div>
+</div>
+
+<!-- ═══ VUELOS ═══ -->
+<div class="screen" id="s-vuelos">
+  <div class="sbar">
+    <span id="sync-lbl">Cargando registros…</span>
+    <button class="srefresh" onclick="loadVuelos()">↻ Actualizar</button>
+  </div>
+  <div class="frow" id="f-row">
+    <button class="ftag on" onclick="filt('ALL',this)">Todos</button>
+    <button class="ftag" onclick="filt('PENDIENTE',this)">Pendientes</button>
+    <button class="ftag" onclick="filt('APROBADO',this)">Aprobados</button>
+    <button class="ftag" onclick="filt('DENEGADO',this)">Denegados</button>
+    <button class="ftag" onclick="filt('CONCLUIDO',this)">Concluidos</button>
+  </div>
+  <div id="vuelos-list"><div class="spin-wrap"><div class="spin"></div>Conectando con Google Sheets…</div></div>
+  <div style="height:24px"></div>
+</div>
+
+<!-- ═══ CHECKLIST ═══ -->
+<div class="screen" id="s-checklist">
+  <div class="alert ai">
+    <span style="font-size:15px;flex-shrink:0">📋</span>
+    <div style="font-size:11px">Completar el Check List antes de armar motores. Enviar evidencia fotográfica al Centro de Control. <em>§6.5</em></div>
+  </div>
+  <div class="sec"><span>Vincular Vuelo</span><span class="sec-line"></span></div>
+  <div class="card">
+    <div class="card-ttl"><div class="card-ttl-icon">🔗</div>Plan de Vuelo Asociado</div>
+    <div class="fg">
+      <label class="fl">Vuelo registrado</label>
+      <select class="fs" id="cl-vuelo"><option value="">— Seleccionar vuelo aprobado o pendiente —</option></select>
+    </div>
+    <div class="fg">
+      <label class="fl">Tipo de verificación</label>
+      <div style="display:flex;gap:8px">
+        <div class="drone-card on" id="cl-pre" onclick="selCLT(this,'PRE')" style="flex:1;justify-content:center;gap:6px;padding:10px">
+          <span>✅</span><span style="font-size:12px;font-weight:700">Pre-vuelo</span>
+        </div>
+        <div class="drone-card" id="cl-post" onclick="selCLT(this,'POST')" style="flex:1;justify-content:center;gap:6px;padding:10px">
+          <span>🏁</span><span style="font-size:12px;font-weight:700">Post-vuelo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sec"><span>Estado de la Aeronave</span><span class="sec-line"></span></div>
+  <div class="card">
+    <div class="card-ttl"><div class="card-ttl-icon">🔋</div>Verificación de Equipo</div>
+    <div class="cl-item"><div><div class="cl-lbl">Batería cargada ≥ 80%</div><div class="cl-sub">Verificar nivel antes de cada vuelo</div></div><button class="tog" id="cl0" onclick="togCL(this)"></button></div>
+    <div class="cl-item"><div><div class="cl-lbl">Hélices y estructura sin daños</div><div class="cl-sub">Revisar fisuras, deformaciones y suciedad</div></div><button class="tog" id="cl1" onclick="togCL(this)"></button></div>
+    <div class="cl-item"><div><div class="cl-lbl">GPS con señal ≥ 10 satélites</div><div class="cl-sub">Aguardar fix GPS antes de armar motores</div></div><button class="tog" id="cl2" onclick="togCL(this)"></button></div>
+    <div class="cl-item"><div><div class="cl-lbl">Cámara / Sensor operativo</div><div class="cl-sub">Lente limpio y calibración verificada</div></div><button class="tog" id="cl3" onclick="togCL(this)"></button></div>
+    <div class="cl-item"><div><div class="cl-lbl">Control remoto / enlace activo</div><div class="cl-sub">Probar conexión RC antes del despegue</div></div><button class="tog" id="cl4" onclick="togCL(this)"></button></div>
+  </div>
+  <div class="sec"><span>Condiciones Operativas</span><span class="sec-line"></span></div>
+  <div class="card">
+    <div class="card-ttl"><div class="card-ttl-icon">🌤</div>Verificación de Entorno</div>
+    <div class="cl-item"><div><div class="cl-lbl">Área de operación despejada</div><div class="cl-sub">Sin personal ni equipos en radio de seguridad</div></div><button class="tog" id="cl5" onclick="togCL(this)"></button></div>
+    <div class="cl-item"><div><div class="cl-lbl">Condiciones climáticas aptas</div><div class="cl-sub">Sin alerta amarilla o roja de tormentas (BARS)</div></div><button class="tog" id="cl6" onclick="togCL(this)"></button></div>
+    <div class="cl-item"><div><div class="cl-lbl">Sin voladuras programadas en zona</div><div class="cl-sub">Confirmar con Perforación y Voladuras</div></div><button class="tog" id="cl7" onclick="togCL(this)"></button></div>
+    <div class="cl-item"><div><div class="cl-lbl">Centro de Control notificado</div><div class="cl-sub">Coordinador confirmó inicio de vuelo</div></div><button class="tog" id="cl8" onclick="togCL(this)"></button></div>
+  </div>
+  <div class="card card-neutral">
+    <div class="card-ttl"><div class="card-ttl-icon" style="background:var(--G6)">📝</div>Observaciones</div>
+    <textarea class="fi" id="cl-obs" rows="3" style="resize:none" placeholder="Anomalías encontradas, condiciones especiales a reportar…"></textarea>
+  </div>
+  <button class="btn bg bw" onclick="submitCL()">📋 ENVIAR CHECKLIST AL CENTRO DE CONTROL</button>
+  <div style="height:24px"></div>
+</div>
+
+<!-- ═══ MAPA ═══ -->
+<div class="screen" id="s-mapa">
+  <div class="map-tb">
+    <button class="mtag on" id="mb-los" onclick="setMapLoc('mine')">⛏ Mina</button>
+    <button class="mtag" id="mb-reg" onclick="setMapLoc('region')">🗺 Región</button>
+    <button class="mtag" id="mb-fer" onclick="setMapLoc('ferro')">🔴 Ferrobamba</button>
+    <button class="mtag" id="mb-cha" onclick="setMapLoc('chalco')">🟠 Chalcobamba</button>
+    <button class="mtag" id="mb-act" onclick="loadMapVuelos()">📍 Vuelos activos</button>
+  </div>
+  <div class="map-wrap">
+    <iframe id="map-frame"
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15247.0!2d-72.2137!3d-14.0522!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zLTE0LjA1NzXCsDA0JzI5LjgiUyA3MsKwMTMnNTkuOCJX!5e1!3m2!1ses!2spe!4v1234567890"
+      allowfullscreen="" loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade">
+    </iframe>
+  </div>
+  <div class="map-footer">
+    <span style="color:var(--R);font-size:14px">▶</span>
+    <span id="map-hint">Las Bambas · Cotabambas · Apurímac · Perú</span>
+  </div>
+  <div style="height:24px"></div>
+</div>
+
+<!-- ═══ CONTROL (ADMIN) ═══ -->
+<div class="screen" id="s-control">
+
+  <!-- GATE -->
+  <div id="gate-section">
+    <div class="gate-wrap">
+      <div class="gate">
+        <div class="gate-emblem">🛡</div>
+        <div class="gate-title">Centro de Control</div>
+        <div style="width:36px;height:3px;background:var(--R);margin:8px auto 14px;border-radius:2px"></div>
+        <div class="gate-sub">
+          Acceso exclusivo para<br>
+          <strong>Coordinadores del Centro de Control</strong><br>
+          Gestión y autorización de planes de vuelo RPAS<br>
+          <em style="font-size:11px;color:var(--G4)">GGO-PI-PG-003 · §6.4</em>
+        </div>
+        <input type="password" class="gate-inp" id="adm-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')admLogin()">
+        <button class="btn bp bw" onclick="admLogin()">ACCEDER AL SISTEMA</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL -->
+  <div id="adm-panel" style="display:none">
+    <div class="admin-bar">
+      <div class="admin-bar-l">
+        <div style="width:7px;height:7px;border-radius:50%;background:var(--R);animation:blink 1s infinite"></div>
+        CENTRO DE CONTROL · SESIÓN ACTIVA
+      </div>
+      <button class="btn bgh bsm" onclick="admOut()">Cerrar sesión</button>
+    </div>
+    <div class="sbar"><span id="adm-lbl">Cargando…</span><button class="srefresh" onclick="loadVuelos(true)">↻ Actualizar</button></div>
+    <div class="stats">
+      <div class="stat-box st1"><div class="stat-n" id="s-tot" style="color:var(--R)">0</div><div class="stat-l">Total</div></div>
+      <div class="stat-box st2"><div class="stat-n" id="s-pen" style="color:var(--YLW)">0</div><div class="stat-l">Pendientes</div></div>
+      <div class="stat-box st3"><div class="stat-n" id="s-apr" style="color:var(--GRN)">0</div><div class="stat-l">Aprobados</div></div>
+      <div class="stat-box st4"><div class="stat-n" id="s-den" style="color:var(--G3)">0</div><div class="stat-l">Denegados</div></div>
+    </div>
+    <div id="adm-list"><div class="spin-wrap"><div class="spin"></div>Cargando registros…</div></div>
+    <div class="card" style="margin-top:8px;border-color:rgba(200,16,46,.2)">
+      <div class="card-ttl" style="color:var(--R)"><div class="card-ttl-icon">⚠</div>Zona de Administración</div>
+      <button class="btn br bw" onclick="delAll()">🗑 Borrar todos los registros</button>
+    </div>
+    <div style="height:24px"></div>
+  </div>
+</div>
+
+
+<!-- ═══ IA · INFORMES (solo administrador) ═══ -->
+<div class="screen" id="s-ia">
+
+  <!-- BLOQUEADO si no es admin -->
+  <div id="ia-lock">
+    <div style="max-width:360px;margin:24px auto 0;text-align:center">
+      <div style="width:60px;height:60px;border-radius:14px;background:var(--BG2);border:1px solid var(--G5);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 16px">🔒</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--G2)">ACCESO RESTRINGIDO</div>
+      <div style="font-size:12px;color:var(--G3);margin-top:6px;line-height:1.6">Este módulo es exclusivo para el<br><strong>Coordinador del Centro de Control</strong>.<br>Inicia sesión primero en la pestaña <strong>Control</strong>.</div>
+      <button class="btn bp" style="margin-top:18px;padding:11px 28px" onclick="goTab('control')">Ir a Control →</button>
+    </div>
+  </div>
+
+  <!-- PANEL ACTIVO solo si admin -->
+  <div id="ia-panel" style="display:none">
+
+    <!-- Header IA -->
+    <div style="background:linear-gradient(135deg,#0F1923 0%,#1E0A10 60%,var(--Rd) 100%);border-radius:var(--RAD);padding:18px 18px 16px;margin-bottom:14px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-24px;right:-24px;width:110px;height:110px;border-radius:50%;background:rgba(200,16,46,.12)"></div>
+      <div style="position:absolute;bottom:-20px;right:14px;width:65px;height:65px;border-radius:50%;background:rgba(200,16,46,.08)"></div>
+      <div style="display:flex;align-items:center;gap:12px;position:relative">
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(200,16,46,.3);border:1px solid rgba(200,16,46,.4);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🤖</div>
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:#fff;line-height:1">INFORME OPERACIONAL IA</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px;letter-spacing:1px">RPAS OPS · MMG Las Bambas · Solo Coordinador</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;position:relative">
+        <span style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600;color:rgba(255,255,255,.7)">🚁 Vuelos por zona</span>
+        <span style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600;color:rgba(255,255,255,.7)">⏱ Tiempo de operación</span>
+        <span style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600;color:rgba(255,255,255,.7)">📊 Tendencias</span>
+      </div>
+    </div>
+
+    <!-- Período -->
+    <div class="sec"><span>Período de análisis</span><span class="sec-line"></span></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px" id="periodo-grid">
+      <div class="pchip on" onclick="selP(this,'hoy')">Hoy</div>
+      <div class="pchip" onclick="selP(this,'semana')">Semana</div>
+      <div class="pchip" onclick="selP(this,'mes')">Mes</div>
+      <div class="pchip" onclick="selP(this,'todo')">Todo</div>
+    </div>
+
+    <!-- Botón generar -->
+    <button class="btn bp bw" id="btn-generar" onclick="generarInforme()" style="margin-bottom:14px">
+      🤖 &nbsp;GENERAR INFORME CON INTELIGENCIA ARTIFICIAL
+    </button>
+
+    <!-- Estado generando -->
+    <div id="ia-generating" style="display:none;text-align:center;padding:28px;background:var(--W);border:1px solid var(--G5);border-radius:var(--RAD);margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px">
+        <div class="spin" style="border-top-color:var(--R);margin:0"></div>
+        <div style="font-size:13px;font-weight:600;color:var(--G2)">Analizando registros de vuelo…</div>
+      </div>
+      <div id="ia-gen-step" style="font-size:11px;color:var(--G4)">Procesando datos del Google Sheet</div>
+    </div>
+
+    <!-- Resultado -->
+    <div id="ia-result-wrap" style="display:none">
+      <div class="sec"><span>Informe generado</span><span class="sec-line"></span>
+        <span style="font-family:var(--MONO);font-size:10px;color:var(--G4)" id="ia-ts"></span>
+      </div>
+
+      <!-- Métricas rápidas (generadas dinámicamente) -->
+      <div id="ia-metrics" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:12px"></div>
+
+      <!-- Tabla de zonas -->
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">
+        <div style="padding:13px 14px 11px;border-bottom:1px solid var(--G5);display:flex;align-items:center;gap:8px">
+          <div class="card-ttl-icon">📍</div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--G3)">Operaciones por Zona</div>
+        </div>
+        <div id="ia-zonas-table" style="padding:0"></div>
+      </div>
+
+      <!-- Informe textual de IA -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="card-ttl-icon">🤖</div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--G3)">Análisis y Recomendaciones</div>
+          </div>
+          <button class="btn bgh" style="padding:6px 11px;font-size:10px;border-radius:6px" onclick="copiarInforme()">📋 Copiar</button>
+        </div>
+        <div id="ia-texto" style="font-size:13px;line-height:1.85;color:var(--G1)"></div>
+      </div>
+
+      <!-- Regenerar -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
+        <button class="btn bgh bsm" onclick="generarInforme()">🔄 Regenerar</button>
+        <button class="btn bgh bsm" onclick="copiarInforme()">📋 Copiar informe</button>
+      </div>
+    </div>
+
+    <div style="height:24px"></div>
+  </div>
+</div>
 
 </div><!-- /screens -->
 
-<div class="toast" id="toast"></div>
-
-<div class="mo" id="modal" onclick="closeModal(event)">
+<!-- ━━━ MODAL DETALLE ━━━ -->
+<div class="mo" id="modal" onclick="closeMo(event)">
   <div class="md">
-    <span class="mh"></span>
-    <div class="mt" id="m-title"></div>
+    <div class="handle"></div>
+    <div class="md-ttl" id="m-ttl"></div>
     <div id="m-body"></div>
   </div>
 </div>
 
+<!-- ━━━ MODAL ADMIN ACTION ━━━ -->
+<div class="mo" id="modal2" onclick="document.getElementById('modal2').classList.remove('open')">
+  <div class="md">
+    <div class="handle"></div>
+    <div class="md-ttl" id="m2-ttl">Gestionar Plan de Vuelo</div>
+    <div id="m2-body"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
-// ══════════════════════════════════════
-// CONFIG
-// ══════════════════════════════════════
+// ══════════════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════════════
 const API = 'https://script.google.com/macros/s/AKfycbwLR-vsmrYSqKSiKauKVRZpd_x1zI_WDgcOIiRo5u39DhXT_isWeCuzZ9lyvnrIEYeO/exec';
 
+// MAP LOCATIONS — Google Maps embeds for each zone
+const MAP_LOCS = {
+  mine:   'https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d8000!2d-72.2137!3d-14.0522!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e1!3m2!1ses!2spe!4v1',
+  region: 'https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d40000!2d-72.2137!3d-14.0522!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e1!3m2!1ses!2spe!4v2',
+  ferro:  'https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d3000!2d-72.2137!3d-14.0522!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e1!3m2!1ses!2spe!4v3',
+  chalco: 'https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d3000!2d-72.2050!3d-14.0680!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e1!3m2!1ses!2spe!4v4',
+};
+
 // ══ STATE ══
-let vuelos=[], rpa='Matrice M300 RTK', isAdm=false;
-let leafMap, drawn, isSat=false, tileL, satL;
-let gpsWatch=null, gpsMarker=null, gpsCircle=null, gpsPos=null;
-let drawnGeo=null;
+let vuelos=[], drone='DJI Matrice M300 RTK', isAdm=false, fe='ALL', clTipo='PRE';
 
 // ══ INIT ══
-document.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById('fecha').value=new Date().toISOString().split('T')[0];
-  mkMsg();
-  testConn();
-  loadVuelos();
-  setInterval(loadVuelos,30000);
+document.addEventListener('DOMContentLoaded', () => {
+  const now = new Date();
+  document.getElementById('fecha').value = now.toISOString().split('T')[0];
+  const hh = now.getHours().toString().padStart(2,'0');
+  const mm = now.getMinutes().toString().padStart(2,'0');
+  document.getElementById('hi').value = `${hh}:${mm}`;
+  document.getElementById('alt').addEventListener('change', altChg);
+  syncIaAccess();
+  ping(); loadVuelos();
+  setInterval(loadVuelos, 30000);
 });
 
-// ══ TEST CONNECTION ══
-async function testConn(){
-  try{
-    const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'TEST'})});
-    const d=await r.json();
-    setConn(d.ok);
-  }catch(e){setConn(false);}
+// ══ PING ══
+async function ping() {
+  try {
+    const r = await fetch(API+'?action=PING&t='+Date.now());
+    const d = await r.json();
+    setConn(d.ok, d.ok ? 'ONLINE' : 'ERROR');
+  } catch(e) { setConn(false, 'SIN RED'); }
 }
-
-function setConn(ok){
-  const p=document.getElementById('pill-conn');
-  const t=document.getElementById('conn-txt');
-  if(ok){p.className='pill pill-sync';t.textContent='ONLINE';}
-  else{p.className='pill pill-sync err';t.textContent='OFFLINE';}
+function setConn(ok, txt) {
+  const p = document.getElementById('pill-conn');
+  const t = document.getElementById('conn-txt');
+  t.textContent = txt;
+  p.className = ok ? 'pill pill-on' : 'pill pill-off';
 }
 
 // ══ API ══
-async function apiGet(){
-  try{
-    const r=await fetch(API+'?t='+Date.now());
-    if(!r.ok) throw new Error('HTTP '+r.status);
+async function apiG(p='') {
+  try {
+    const r = await fetch(`${API}?${p}&t=${Date.now()}`, {redirect:'follow'});
+    if(!r.ok) throw new Error(r.status);
     return await r.json();
-  }catch(e){return{ok:false,error:e.toString()};}
+  } catch(e) { return {ok:false, error:e.toString()}; }
 }
-async function apiPost(body){
-  try{
-    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    if(!r.ok) throw new Error('HTTP '+r.status);
+async function apiP(body) {
+  try {
+    const r = await fetch(API, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain'},
+      body: JSON.stringify(body),
+      redirect:'follow'
+    });
+    if(!r.ok) throw new Error(r.status);
     return await r.json();
-  }catch(e){return{ok:false,error:e.toString()};}
+  } catch(e) { return {ok:false, error:e.toString()}; }
 }
 
-// ══ LOAD VUELOS ══
-async function loadVuelos(adm){
-  const d=await apiGet();
-  if(d.ok){
-    vuelos=(d.vuelos||[]).sort((a,b)=>(b.TIMESTAMP||'').localeCompare(a.TIMESTAMP||''));
-    const t=new Date().toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'});
-    document.getElementById('sync-lbl').textContent=`Sync ${t} · ${vuelos.length} vuelos`;
-    setConn(true);
-    renderVuelos();
-    if(isAdm||adm) renderAdm();
-  }else{
-    setConn(false);
-    document.getElementById('sync-lbl').textContent='⚠️ Sin conexión — '+( d.error||'');
+// ══ LOAD ══
+async function loadVuelos(adm) {
+  const d = await apiG('action=GET_VUELOS');
+  if(d.ok) {
+    vuelos = (d.vuelos||[]).sort((a,b)=>(b.TIMESTAMP||'').localeCompare(a.TIMESTAMP||''));
+    const pend = vuelos.filter(v=>v.ESTADO==='PENDIENTE').length;
+    const nb = document.getElementById('tb-pend');
+    nb.style.display = pend ? 'flex' : 'none'; nb.textContent = pend;
+    const t = new Date().toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('sync-lbl').textContent = `Actualizado ${t} · ${vuelos.length} registros`;
+    setConn(true, 'ONLINE'); renderVuelos(); updCLSel();
+    if(isAdm||adm) { renderAdm(); updStats(); }
+  } else {
+    setConn(false, 'SIN CONEXIÓN');
+    document.getElementById('sync-lbl').textContent = 'Sin conexión con el servidor';
   }
 }
 
 // ══ TABS ══
-function goTab(tab,btn){
+function goTab(tab, btn) {
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.getElementById('s-'+tab).classList.add('on');
   if(btn) btn.classList.add('on');
-  else{
-    const idx={reg:0,vuelos:1,mapa:2,admin:3}[tab];
-    if(idx!==undefined) document.querySelectorAll('.tab')[idx].classList.add('on');
-  }
-  if(tab==='mapa'&&!leafMap) initMap();
+  else { const m={plan:'t0',vuelos:'t1',checklist:'t2',mapa:'t3',control:'t4',ia:'t5'}; const el=document.getElementById(m[tab]); if(el)el.classList.add('on'); }
   if(tab==='vuelos') loadVuelos();
-  if(tab==='admin'&&isAdm) renderAdm();
+  if(tab==='control' && isAdm) renderAdm();
+  if(tab==='mapa') setTimeout(()=>setMapLoc('mine'),50);
 }
 
 // ══ FORM ══
-function lugarChg(){
-  document.getElementById('otro-w').style.display=
-    document.getElementById('lugar').value==='OTRO'?'block':'none';
-}
-function selRPA(el,name){
-  document.querySelectorAll('.rpa-opt').forEach(o=>o.classList.remove('on'));
-  el.classList.add('on'); rpa=name; mkMsg();
-}
-function getLugar(){
-  const v=document.getElementById('lugar').value;
-  return v==='OTRO'?document.getElementById('lugar-o').value.toUpperCase():v;
-}
-
-// ══ BUILD MESSAGE ══
-function buildMsg(){
-  const lugar=getLugar();
-  const fecha=document.getElementById('fecha').value;
-  if(!lugar||!fecha) return null;
-  const [y,m,d]=fecha.split('-');
-  const hi=document.getElementById('hi').value;
-  const hf=document.getElementById('hf').value;
-  const alt=document.getElementById('alt').value;
-  const serie=document.getElementById('serie').value;
-  const p1=document.getElementById('p1').value;
-  const d1=document.getElementById('d1').value;
-  const p2=document.getElementById('p2').value;
-  const d2=document.getElementById('d2').value;
-  const ger=document.getElementById('ger').value;
-  const mis=document.getElementById('mision').value;
-  let msg=`BUENOS DÍAS\nINFORMO PLAN DE VUELO.\nLUGAR: ${lugar}\nFecha: ${d}/${m}/${y}\n`;
-  if(hi||hf) msg+=`Hora:  ${hi||'--:--'} AM @ ${hf||'--:--'} AM\n`;
-  if(alt) msg+=`Altura de vuelo: ${alt} m\n`;
-  msg+=`RPA: ${rpa}`;
-  if(serie) msg+=` Serie: ${serie}`;
-  msg+=`\n${mis}.\n`;
-  if(p1) msg+=p2?`Piloto: ${p1}/${p2}\nDNI: ${d1||'---'}/${d2||'---'}\n`:`Piloto: ${p1}\n${d1?'DNI: '+d1+'\n':''}`;
-  msg+=`Empresa: MINERA LAS BAMBAS.\nGerencia- ${ger}.`;
-  return msg;
-}
-function mkMsg(){
-  const msg=buildMsg();
-  const el=document.getElementById('msg-pre');
-  el.textContent=msg||'// Complete los campos para generar el mensaje...';
-  el.style.color=msg?'#a8ffcc':'var(--muted)';
-}
-function copyMsg(){
-  const msg=buildMsg();
-  if(!msg){toast('⚠️ Complete los campos','err');return;}
-  navigator.clipboard.writeText(msg).then(()=>toast('✅ Copiado!','ok')).catch(()=>toast('✅ Copiado!','ok'));
-}
+function lugarChg() { document.getElementById('otro-w').style.display = document.getElementById('lugar').value==='OTRO'?'block':'none'; }
+function empresaChg() { document.getElementById('contra-w').style.display = document.getElementById('empresa').value==='CONTRATISTA'?'block':'none'; }
+function altChg() { document.getElementById('alt-otro-w').style.display = document.getElementById('alt').value==='otro'?'block':'none'; }
+function selDrone(el, name) { document.querySelectorAll('.drone-card').forEach(c=>c.classList.remove('on')); el.classList.add('on'); drone = name; }
+function getAlt() { const v=document.getElementById('alt').value; return v==='otro'?document.getElementById('alt-otro').value:v; }
+function getLugar() { const v=document.getElementById('lugar').value; return v==='OTRO'?document.getElementById('lugar-o').value.toUpperCase():v; }
+function getEmp() { const v=document.getElementById('empresa').value; return v==='CONTRATISTA'?(document.getElementById('contra-n').value||'EMPRESA CONTRATISTA'):v; }
 
 // ══ SUBMIT ══
-async function submit(){
-  const lugar=getLugar();
-  if(!lugar){toast('⚠️ Selecciona el lugar','err');return;}
-  if(!document.getElementById('p1').value.trim()){toast('⚠️ Ingresa el piloto','err');return;}
-  const btn=document.getElementById('btn-reg');
-  btn.disabled=true;btn.textContent='⏳ ENVIANDO...';
-  const vuelo={
-    lugar, fecha:document.getElementById('fecha').value,
-    horaInicio:document.getElementById('hi').value,
-    horaFin:document.getElementById('hf').value,
-    altura:document.getElementById('alt').value,
-    rpa, serie:document.getElementById('serie').value,
-    mision:document.getElementById('mision').value,
-    piloto1:document.getElementById('p1').value,
-    dni1:document.getElementById('d1').value,
-    piloto2:document.getElementById('p2').value,
-    dni2:document.getElementById('d2').value,
-    gerencia:document.getElementById('ger').value,
-    mensaje:buildMsg(),
-    lat:gpsPos?gpsPos.lat:'',
-    lng:gpsPos?gpsPos.lng:'',
-    zonaGeo:drawnGeo?JSON.stringify(drawnGeo):''
+async function submitVuelo() {
+  const lugar = getLugar();
+  if(!lugar) { toast('Selecciona el lugar de operación','warn'); return; }
+  if(!document.getElementById('p1').value.trim()) { toast('Ingresa el nombre del piloto','warn'); return; }
+  if(!document.getElementById('serie').value.trim()) { toast('Ingresa el número de serie del RPA','warn'); return; }
+  const btn = document.getElementById('btn-reg');
+  btn.disabled = true; btn.textContent = 'ENVIANDO SOLICITUD…';
+
+  const vuelo = {
+    lugar, cuadrante: document.getElementById('cuadrante').value,
+    fecha: document.getElementById('fecha').value,
+    horaInicio: document.getElementById('hi').value, horaFin: document.getElementById('hf').value,
+    altura: getAlt(), rpaMod: drone, rpaSerie: document.getElementById('serie').value,
+    mision: document.getElementById('mision').value,
+    piloto1: document.getElementById('p1').value, dni1: document.getElementById('d1').value,
+    codPiloto1: document.getElementById('cod1').value, piloto2: document.getElementById('p2').value,
+    dni2: document.getElementById('d2').value, celular: document.getElementById('cel').value,
+    empresa: getEmp(), gerencia: document.getElementById('gerencia').value,
+    lat:'', lng:'', zonaGeo:'', checklistOk:'NO'
   };
-  const r=await apiPost({action:'ADD',vuelo});
-  btn.disabled=false;btn.textContent='✈️ REGISTRAR';
-  if(r.ok){
-    toast('✅ Vuelo guardado en Google Sheets!','ok');
-    loadVuelos();
-  }else{
-    toast('❌ Error: '+(r.error||'Sin conexión'),'err');
-    console.error('API error:',r);
+
+  const r = await apiP({action:'ADD_VUELO', vuelo});
+  btn.disabled = false; btn.innerHTML = '✈ ENVIAR SOLICITUD AL CENTRO DE CONTROL';
+
+  if(r.ok) {
+    toast('Solicitud enviada correctamente','ok');
+    await loadVuelos();
+    setTimeout(()=>{
+      if(confirm('✅ Solicitud registrada.\n\n¿Deseas completar el Check List ahora?')) {
+        goTab('checklist');
+        const sel = document.getElementById('cl-vuelo');
+        for(let o of sel.options) if(o.value===r.id) { sel.value=r.id; break; }
+      }
+    }, 400);
+  } else {
+    toast('Error al enviar: '+(r.error||'Sin conexión'),'err');
   }
 }
 
-// ══ RENDER VUELOS ══
-function renderVuelos(){
-  const el=document.getElementById('vuelos-list');
-  if(!vuelos.length){
-    el.innerHTML=`<div class="empty"><div style="font-size:40px">📡</div><div style="font-size:13px;margin-top:9px">Sin vuelos registrados</div><div style="font-size:11px;margin-top:5px">Ve a Registro para agregar</div></div>`;
+// ══ VUELOS ══
+function filt(e, btn) { fe=e; document.querySelectorAll('#f-row .ftag').forEach(b=>b.classList.remove('on')); if(btn)btn.classList.add('on'); renderVuelos(); }
+function stKey(e) { return {PENDIENTE:'P',APROBADO:'A',OBSERVADO:'O',DENEGADO:'D',CONCLUIDO:'C'}[e]||'P'; }
+
+function renderVuelos() {
+  const el = document.getElementById('vuelos-list');
+  const list = fe==='ALL' ? vuelos : vuelos.filter(v=>v.ESTADO===fe);
+  if(!list.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📡</div><div class="empty-txt">Sin registros${fe!=='ALL'?' · Estado: '+fe:''}</div><div class="empty-sub">Los vuelos aparecerán aquí cuando sean enviados</div></div>`;
     return;
   }
-  el.innerHTML=vuelos.map(v=>`
-    <div class="vc ${v.ESTADO||'PENDIENTE'}" onclick="openModal('${v.ID}')">
-      <div class="vh">
-        <div class="vl">${v.LUGAR||''}</div>
-        <div class="vb b${(v.ESTADO||'PENDIENTE')[0]}">${v.ESTADO||'PENDIENTE'}</div>
+  el.innerHTML = list.map(v => {
+    const e = v.ESTADO||'PENDIENTE', k = stKey(e);
+    return `<div class="vc" onclick="openModal('${v.ID}')">
+      <div class="vst ${e}"></div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:4px">
+        <div>
+          <div class="v-place">${v.LUGAR||''}</div>
+          ${v.CUADRANTE?`<div class="v-quad">📐 ${v.CUADRANTE}</div>`:''}
+          ${v.CODIGO_AUTH?`<div class="v-auth">✅ ${v.CODIGO_AUTH}</div>`:''}
+        </div>
+        <span class="sc sc${k}">${e}</span>
       </div>
-      <div class="vm">
-        <span>📅 <strong>${fmtD(v.FECHA)}</strong></span>
-        <span>⏰ <strong>${v.HORA_INICIO||'--'}→${v.HORA_FIN||'--'}</strong></span>
-        <span>📏 <strong>${v.ALTURA?v.ALTURA+'m':'--'}</strong></span>
-        <span>🚁 <strong>${(v.RPA||'').split(' ').slice(0,2).join(' ')}</strong></span>
+      <div class="v-meta">
+        <span>📅 <strong>${fd(v.FECHA)}</strong></span>
+        <span>⏰ <strong>${v.HORA_INICIO||'--'} → ${v.HORA_FIN||'--'}</strong></span>
+        <span>🚁 <strong>${shortDrone(v.RPA_MODELO)}</strong></span>
+        <span>📏 <strong>${v.ALTURA?v.ALTURA+' m':'--'}</strong></span>
       </div>
-      <div class="vf">
-        <div class="vp">✈️ <strong>${v.PILOTO1||''}${v.PILOTO2?'/'+v.PILOTO2:''}</strong></div>
-        <div style="font-size:10px;color:var(--muted)">${v.GERENCIA||''}</div>
+      <div class="v-foot">
+        <span style="font-size:11px;color:var(--G3);font-weight:500">✈ ${v.PILOTO1||''}${v.PILOTO2?' · '+v.PILOTO2:''}</span>
+        <span style="font-size:10px;color:var(--G4)">${v.GERENCIA||''} ${v.CHECKLIST_OK==='SI'?'<span style="color:var(--GRN);font-weight:700">· CL✓</span>':''}</span>
       </div>
-    </div>`).join('');
-}
-
-// ══ ADMIN ══
-function admLogin(){
-  const p=document.getElementById('adm-pass').value;
-  if(!p){toast('⚠️ Ingresa la contraseña','err');return;}
-  sessionStorage.setItem('ap',p);
-  isAdm=true;
-  document.getElementById('adm-lock').style.display='none';
-  document.getElementById('adm-open').style.display='block';
-  document.getElementById('pill-adm').className='pill pill-admin on';
-  document.getElementById('pill-adm').textContent='🟠 ADMIN';
-  toast('✅ Panel admin activo','ok');
-  loadVuelos(true);
-}
-function admOut(){
-  isAdm=false;sessionStorage.removeItem('ap');
-  document.getElementById('adm-lock').style.display='block';
-  document.getElementById('adm-open').style.display='none';
-  document.getElementById('adm-pass').value='';
-  document.getElementById('pill-adm').className='pill pill-admin';
-  document.getElementById('pill-adm').textContent='🔒 ADMIN';
-  toast('Sesión cerrada','inf');
-}
-function renderAdm(){
-  const el=document.getElementById('adm-list');
-  document.getElementById('adm-lbl').textContent=`${vuelos.length} vuelos en Google Sheets`;
-  if(!vuelos.length){el.innerHTML=`<div class="empty"><div style="font-size:38px">📋</div><div style="margin-top:9px">Sin vuelos</div></div>`;return;}
-  el.innerHTML=vuelos.map(v=>`
-    <div class="vc ${v.ESTADO||'PENDIENTE'}">
-      <div class="vh">
-        <div class="vl">${v.LUGAR||''}</div>
-        <div class="vb b${(v.ESTADO||'PENDIENTE')[0]}">${v.ESTADO||'PENDIENTE'}</div>
-      </div>
-      <div class="vm">
-        <span>📅 <strong>${fmtD(v.FECHA)}</strong></span>
-        <span>👤 <strong>${v.PILOTO1||''}</strong></span>
-        <span>🚁 <strong>${(v.RPA||'').split(' ')[0]}</strong></span>
-        <span>🏢 <strong>${v.GERENCIA||''}</strong></span>
-      </div>
-      <div style="font-size:11px;color:var(--muted);margin-top:5px">DNI: <span style="color:var(--text)">${v.DNI1||'--'}</span></div>
-      <div style="display:flex;gap:5px;margin-top:9px;flex-wrap:wrap">
-        ${v.ESTADO==='PENDIENTE'?`
-          <button class="btn-ok" onclick="admAct('AUTORIZAR','${v.ID}')">✓ Autorizar</button>
-          <button class="btn-no" onclick="admAct('RECHAZAR','${v.ID}')">✗ Rechazar</button>
-        `:''}
-        ${v.ESTADO==='AUTORIZADO'?`<button class="btn-warn" onclick="admAct('CONCLUIR','${v.ID}')">☑ Concluir</button>`:''}
-        <button class="btn-copy" onclick="copyVMsg('${v.ID}')">📋</button>
-        <button class="btn-no" onclick="admAct('DELETE','${v.ID}')" style="margin-left:auto">🗑️</button>
-      </div>
-    </div>`).join('');
-}
-async function admAct(action,id){
-  const p=sessionStorage.getItem('ap');
-  if(!p){toast('⚠️ Sesión expirada','err');admOut();return;}
-  const labels={AUTORIZAR:'⏳ Autorizando...',RECHAZAR:'⏳ Rechazando...',CONCLUIR:'⏳ Concluyendo...',DELETE:'⏳ Eliminando...'};
-  toast(labels[action]||'⏳...','inf');
-  const r=await apiPost({action,id,password:p});
-  if(r.ok){
-    const msgs={AUTORIZAR:'✅ VUELO AUTORIZADO',RECHAZAR:'❌ Vuelo rechazado',CONCLUIR:'☑ Vuelo concluido',DELETE:'🗑️ Eliminado'};
-    toast(msgs[action],'ok');
-    await loadVuelos(true);
-  }else{
-    if(r.error==='Contraseña incorrecta'){toast('❌ Contraseña incorrecta','err');admOut();}
-    else toast('❌ '+(r.error||'Error'),'err');
-  }
-}
-async function delAll(){
-  if(!confirm('¿BORRAR TODOS los vuelos del Google Sheet?\nEsto NO se puede deshacer.')) return;
-  const p=sessionStorage.getItem('ap');
-  toast('⏳ Borrando todos...','inf');
-  for(const v of [...vuelos]) await apiPost({action:'DELETE',id:v.ID,password:p});
-  toast('🗑️ Todos borrados','ok');
-  await loadVuelos(true);
-}
-
-// ══ MODAL ══
-function openModal(id){
-  const v=vuelos.find(x=>x.ID===id);if(!v)return;
-  document.getElementById('m-title').textContent=v.LUGAR||'';
-  document.getElementById('m-body').innerHTML=`
-    <div style="font-size:12px;color:var(--muted);margin-bottom:10px">
-      Estado: <span class="vb b${(v.ESTADO||'P')[0]}" style="font-size:11px">${v.ESTADO||'PENDIENTE'}</span>
-      &nbsp;·&nbsp; ${fmtD(v.FECHA)} ${v.HORA_INICIO||''}
-      ${v.LAT?`<br>📍 GPS: ${parseFloat(v.LAT).toFixed(5)}, ${parseFloat(v.LNG).toFixed(5)}`:''}
-    </div>
-    <div class="msg" style="margin-bottom:12px">${v.MENSAJE||'Sin mensaje'}</div>
-    <div style="display:flex;gap:7px">
-      <button class="btn-s" style="flex:1" onclick="copyVMsg('${id}')">📋 Copiar</button>
-      ${v.LAT?`<button class="btn-copy" onclick="verEnMapa('${id}')">🗺️ Ver</button>`:''}
     </div>`;
-  document.getElementById('modal').classList.add('open');
+  }).join('');
 }
-function copyVMsg(id){
-  const v=vuelos.find(x=>x.ID===id);
-  if(v?.MENSAJE){navigator.clipboard.writeText(v.MENSAJE).catch(()=>{});toast('✅ Copiado!','ok');closeModal();}
+function shortDrone(s) { return (s||'--').replace('DJI ','').split(' ').slice(0,2).join(' '); }
+
+// ══ CHECKLIST ══
+function selCLT(el, t) {
+  ['cl-pre','cl-post'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  el.classList.add('on'); clTipo=t;
 }
-function verEnMapa(id){
-  const v=vuelos.find(x=>x.ID===id);
-  if(!v||!v.LAT) return;
-  closeModal();goTab('mapa');
-  setTimeout(()=>{
-    if(!leafMap) initMap();
-    leafMap.setView([parseFloat(v.LAT),parseFloat(v.LNG)],16);
-    L.popup().setLatLng([parseFloat(v.LAT),parseFloat(v.LNG)]).setContent(`<b>${v.LUGAR}</b><br>${v.PILOTO1}`).openOn(leafMap);
-  },400);
+function togCL(btn) { btn.classList.toggle('on'); }
+function updCLSel() {
+  const sel=document.getElementById('cl-vuelo'), cur=sel.value;
+  sel.innerHTML='<option value="">— Seleccionar vuelo —</option>';
+  vuelos.filter(v=>['PENDIENTE','APROBADO'].includes(v.ESTADO)).forEach(v=>{
+    const o=document.createElement('option'); o.value=v.ID;
+    o.textContent=`${fd(v.FECHA)} · ${v.LUGAR||''} · ${v.PILOTO1||''} [${v.ESTADO}]`;
+    sel.appendChild(o);
+  });
+  if(cur) sel.value=cur;
 }
-function closeModal(e){
-  if(!e||e.target===document.getElementById('modal'))
-    document.getElementById('modal').classList.remove('open');
+async function submitCL() {
+  const vId=document.getElementById('cl-vuelo').value;
+  if(!vId){toast('Selecciona el vuelo','warn');return;}
+  const v=vuelos.find(x=>x.ID===vId);
+  const ids=['cl0','cl1','cl2','cl3','cl4','cl5','cl6','cl7','cl8'];
+  const vals=ids.map(id=>document.getElementById(id).classList.contains('on'));
+  if(!vals.every(Boolean)&&!confirm('⚠ Hay ítems sin completar.\n¿Enviar de todas formas?')) return;
+  toast('Enviando checklist…','inf');
+  const r=await apiP({action:'ADD_CHECKLIST',checklist:{vueloId:vId,piloto:v?v.PILOTO1:'',fecha:v?v.FECHA:'',tipo:clTipo,bateria:vals[0],helices:vals[1],gps:vals[2],camara:vals[3],radio:vals[4],areaDespejada:vals[5],clima:vals[6],notificadoCCI:vals[8],observaciones:document.getElementById('cl-obs').value}});
+  if(r.ok){toast('Checklist enviado correctamente','ok');await loadVuelos();ids.forEach(id=>document.getElementById(id).classList.remove('on'));document.getElementById('cl-obs').value='';}
+  else toast('Error: '+(r.error||'Sin conexión'),'err');
 }
 
 // ══ MAP ══
-function initMap(){
-  const center=[-14.0522,-72.2137];
-  leafMap=L.map('map',{center,zoom:14,zoomControl:true});
-  tileL=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OSM'}).addTo(leafMap);
-  satL=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19});
-  drawn=new L.FeatureGroup().addTo(leafMap);
-  const dc=new L.Control.Draw({
-    draw:{
-      polygon:{shapeOptions:{color:'#00d4ff',fillColor:'#00d4ff',fillOpacity:.2,weight:2}},
-      circle:{shapeOptions:{color:'#ff6b35',fillColor:'#ff6b35',fillOpacity:.15,weight:2}},
-      rectangle:{shapeOptions:{color:'#ffd60a',fillColor:'#ffd60a',fillOpacity:.15,weight:2}},
-      marker:false,polyline:false,circlemarker:false
-    },
-    edit:{featureGroup:drawn}
-  });
-  leafMap.addControl(dc);
-  leafMap.on(L.Draw.Event.CREATED,e=>{
-    drawn.addLayer(e.layer);
-    drawnGeo=e.layer.toGeoJSON();
-    document.getElementById('map-hint').innerHTML='✅ Zona marcada — se guardará con el registro del vuelo';
-  });
-
-  // Marcadores tajos
-  [['Tajo Ferrobamba',-14.0522,-72.2137,'🔵'],['Tajo Chalcobamba',-14.0680,-72.2050,'🟢']].forEach(([n,lat,lng,ico])=>{
-    L.marker([lat,lng],{icon:L.divIcon({
-      html:`<div style="background:rgba(9,14,26,.9);color:#00d4ff;padding:4px 8px;border-radius:8px;font-size:11px;font-weight:700;border:1px solid #1e3356;white-space:nowrap">${ico} ${n}</div>`,
-      className:'',iconAnchor:[55,16]
-    })}).addTo(leafMap);
-  });
+const mapKeys = { mine:'mb-los', region:'mb-reg', ferro:'mb-fer', chalco:'mb-cha' };
+function setMapLoc(key) {
+  Object.values(mapKeys).forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('on');});
+  const btnId = mapKeys[key]; if(btnId){const el=document.getElementById(btnId);if(el)el.classList.add('on');}
+  document.getElementById('map-frame').src = MAP_LOCS[key]||MAP_LOCS.mine;
+  const labels={mine:'Operación Minera · Las Bambas',region:'Vista regional · Cotabambas · Apurímac',ferro:'Tajo Ferrobamba · Área de vuelo',chalco:'Tajo Chalcobamba · Área de vuelo'};
+  document.getElementById('map-hint').textContent = labels[key]||'';
+}
+function loadMapVuelos() {
+  const aprobados = vuelos.filter(v=>v.ESTADO==='APROBADO');
+  toast(aprobados.length?`${aprobados.length} vuelos aprobados activos`:'Sin vuelos aprobados activos','inf');
 }
 
-function mTool(t){
-  document.getElementById('mb-poly').classList.toggle('on',t==='poly');
-  document.getElementById('mb-circ').classList.toggle('on',t==='circ');
-  if(!leafMap) return;
-  if(t==='poly') new L.Draw.Polygon(leafMap).enable();
-  if(t==='circ') new L.Draw.Circle(leafMap).enable();
+// ══ ADMIN ══
+function admLogin() {
+  const p=document.getElementById('adm-pass').value;
+  if(!p){toast('Ingresa la contraseña','warn');return;}
+  sessionStorage.setItem('ap',p); isAdm=true;
+  document.getElementById('gate-section').style.display='none';
+  document.getElementById('adm-panel').style.display='block';
+  document.getElementById('btn-lock').className='btn-lock on';
+  document.getElementById('btn-lock').textContent='🔓 Control';
+  syncIaAccess();
+  toast('Acceso autorizado','ok'); loadVuelos(true);
 }
-function clearMap(){
-  if(drawn) drawn.clearLayers();
-  drawnGeo=null;
-  document.getElementById('map-hint').textContent='Activa Mi GPS para verte en el mapa, luego dibuja la zona de sobrevuelo';
+function admOut() {
+  isAdm=false; sessionStorage.removeItem('ap');
+  document.getElementById('gate-section').style.display='block';
+  document.getElementById('adm-panel').style.display='none';
+  document.getElementById('adm-pass').value='';
+  document.getElementById('btn-lock').className='btn-lock';
+  document.getElementById('btn-lock').textContent='🔒 Control';
+  syncIaAccess();
+  // Si está en pestaña IA, redirigir a Plan
+  if(document.getElementById('s-ia').classList.contains('on')) goTab('plan');
+  toast('Sesión cerrada','inf');
 }
-function togSat(){
-  const btn=document.getElementById('mb-sat');
-  if(isSat){leafMap.removeLayer(satL);tileL.addTo(leafMap);btn.classList.remove('on');btn.textContent='🛰️ Satélite';}
-  else{leafMap.removeLayer(tileL);satL.addTo(leafMap);btn.classList.add('on');btn.textContent='🗺️ Mapa';}
-  isSat=!isSat;
+function updStats() {
+  document.getElementById('s-tot').textContent=vuelos.length;
+  document.getElementById('s-pen').textContent=vuelos.filter(v=>v.ESTADO==='PENDIENTE').length;
+  document.getElementById('s-apr').textContent=vuelos.filter(v=>v.ESTADO==='APROBADO').length;
+  document.getElementById('s-den').textContent=vuelos.filter(v=>['DENEGADO','CONCLUIDO'].includes(v.ESTADO)).length;
 }
-
-// ══ GPS TIEMPO REAL ══
-function startGPS(){
-  if(!leafMap) initMap();
-  if(!navigator.geolocation){toast('❌ GPS no disponible en este dispositivo','err');return;}
-  const btn=document.getElementById('mb-gps');
-  if(gpsWatch){
-    navigator.geolocation.clearWatch(gpsWatch);
-    gpsWatch=null;
-    if(gpsMarker){leafMap.removeLayer(gpsMarker);gpsMarker=null;}
-    if(gpsCircle){leafMap.removeLayer(gpsCircle);gpsCircle=null;}
-    btn.classList.remove('on');btn.textContent='📍 Mi GPS';
-    document.getElementById('gps-fab').style.background='var(--card)';
-    toast('GPS desactivado','inf');
-    return;
+function renderAdm() {
+  const el=document.getElementById('adm-list'); updStats();
+  document.getElementById('adm-lbl').textContent=`${vuelos.length} vuelos · ${vuelos.filter(v=>v.ESTADO==='PENDIENTE').length} pendientes`;
+  if(!vuelos.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-txt">Sin vuelos registrados</div></div>`;return;}
+  el.innerHTML=vuelos.map(v=>{
+    const e=v.ESTADO||'PENDIENTE', k=stKey(e);
+    return`<div class="vc" onclick="openAdm('${v.ID}')">
+      <div class="vst ${e}"></div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:4px">
+        <div>
+          <div class="v-place">${v.LUGAR||''}</div>
+          <div class="v-quad">${v.PILOTO1||''} · DNI ${v.DNI1||'--'}</div>
+          ${v.CODIGO_AUTH?`<div class="v-auth">✅ ${v.CODIGO_AUTH}</div>`:''}
+        </div>
+        <span class="sc sc${k}">${e}</span>
+      </div>
+      <div class="v-meta">
+        <span>📅 <strong>${fd(v.FECHA)}</strong></span>
+        <span>⏰ <strong>${v.HORA_INICIO||'--'}→${v.HORA_FIN||'--'}</strong></span>
+        <span>🚁 <strong>${shortDrone(v.RPA_MODELO)}</strong></span>
+        <span>CL: <strong style="color:${v.CHECKLIST_OK==='SI'?'var(--GRN)':'var(--R)'}">${v.CHECKLIST_OK||'NO'}</strong></span>
+      </div>
+    </div>`;
+  }).join('');
+}
+function openAdm(id) {
+  const v=vuelos.find(x=>x.ID===id); if(!v) return;
+  const e=v.ESTADO||'PENDIENTE';
+  document.getElementById('m2-ttl').innerHTML=`<span>${v.LUGAR||''}</span>`;
+  document.getElementById('m2-body').innerHTML=`
+    <div class="alert ai" style="margin-bottom:13px;font-size:12px">
+      <span style="font-size:15px;flex-shrink:0">📋</span>
+      <div><strong>${v.PILOTO1||''}${v.PILOTO2?' · '+v.PILOTO2:''}</strong><br>
+      DNI: ${v.DNI1||'--'} · Cód: ${v.COD_PILOTO1||'--'} · 📱 ${v.CELULAR||'--'}<br>
+      RPA: ${v.RPA_MODELO||''}<br>Serie: ${v.RPA_SERIE||'--'}<br>
+      Misión: ${v.MISION||''} · Altura: ${v.ALTURA||'--'} m<br>
+      ${v.CUADRANTE?'Cuadrante: '+v.CUADRANTE+'<br>':''}
+      ${v.EMPRESA||''} · ${v.GERENCIA||''}<br>
+      Check List: <strong style="color:${v.CHECKLIST_OK==='SI'?'var(--GRN)':'var(--R)'}">${v.CHECKLIST_OK==='SI'?'COMPLETADO':'PENDIENTE'}</strong>
+      ${v.OBSERVACION?'<br><em>'+v.OBSERVACION+'</em>':''}
+      </div>
+    </div>
+    <div class="fg"><label class="fl">Código de autorización</label><input class="fi" id="ma-cod" placeholder="Ej: AUTH-260309-001" value="${v.CODIGO_AUTH||''}"></div>
+    <div class="fg"><label class="fl">Observación / Motivo</label><input class="fi" id="ma-obs" placeholder="Ej: Conflicto con tráfico aéreo 14:00h" value="${v.OBSERVACION||''}"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+      ${e==='PENDIENTE'||e==='OBSERVADO'?`
+        <button class="btn bg" onclick="admAct('APROBADO','${id}')">✅ APROBAR</button>
+        <button class="btn" style="background:#FFFBEB;border:1.5px solid #FDE68A;color:#92400E;font-family:var(--FONT);font-size:13px;font-weight:700;letter-spacing:.5px;cursor:pointer;padding:13px;text-transform:uppercase;border-radius:var(--RAD2);transition:all .2s" onclick="admAct('OBSERVADO','${id}')">👁 OBSERVAR</button>
+        <button class="btn br" onclick="admAct('DENEGADO','${id}')" style="grid-column:span 2">❌ DENEGAR VUELO</button>
+      `:''}
+      ${e==='APROBADO'?`<button class="btn bgh" onclick="admAct('CONCLUIDO','${id}')" style="grid-column:span 2">☑ MARCAR CONCLUIDO</button>`:''}
+    </div>
+    <div style="margin-top:9px">
+      <button class="btn br bw bsm" onclick="admDel('${id}')">🗑 Eliminar registro</button>
+    </div>`;
+  document.getElementById('modal2').classList.add('open');
+}
+async function admAct(estado, id) {
+  const p=sessionStorage.getItem('ap'); if(!p){toast('Sesión expirada','err');admOut();return;}
+  const cod=document.getElementById('ma-cod')?.value||'';
+  const obs=document.getElementById('ma-obs')?.value||'';
+  const codigoAuth=estado==='APROBADO'?(cod||genCod()):cod;
+  toast('Procesando…','inf');
+  const r=await apiP({action:'UPD_ESTADO',id,password:p,estado,observacion:obs,codigoAuth});
+  if(r.ok){
+    const msgs={APROBADO:'Vuelo aprobado correctamente',OBSERVADO:'Vuelo marcado como observado',DENEGADO:'Vuelo denegado',CONCLUIDO:'Vuelo concluido'};
+    toast(msgs[estado]||'Actualizado','ok');
+    document.getElementById('modal2').classList.remove('open');
+    await loadVuelos(true);
+  } else {
+    if(r.error==='Contraseña incorrecta'){toast('Contraseña incorrecta','err');admOut();}
+    else toast('Error: '+(r.error||''),'err');
   }
-  toast('⏳ Obteniendo GPS...','inf');
-  btn.classList.add('on');btn.textContent='📍 GPS ON';
-  document.getElementById('gps-fab').style.background='rgba(0,212,255,.2)';
-  gpsWatch=navigator.geolocation.watchPosition(
-    pos=>{
-      const {latitude:lat,longitude:lng,accuracy:acc}=pos.coords;
-      gpsPos={lat,lng,acc};
-      if(gpsCircle) leafMap.removeLayer(gpsCircle);
-      if(gpsMarker) leafMap.removeLayer(gpsMarker);
-      gpsCircle=L.circle([lat,lng],{radius:acc,className:'gps-acc',interactive:false}).addTo(leafMap);
-      gpsMarker=L.marker([lat,lng],{icon:L.divIcon({html:'<div class="gps-marker"></div>',className:'',iconSize:[16,16],iconAnchor:[8,8]})}).addTo(leafMap);
-      gpsMarker.bindPopup(`📍 Tu posición<br>Precisión: ±${Math.round(acc)}m`);
-      document.getElementById('map-hint').innerHTML=`📍 GPS activo · Precisión: <strong>±${Math.round(acc)}m</strong> · <a style="color:var(--accent);cursor:pointer" onclick="centerGPS()">Centrar</a>`;
-    },
-    err=>{
-      toast('❌ Error GPS: '+err.message,'err');
-      btn.classList.remove('on');btn.textContent='📍 Mi GPS';
-    },
-    {enableHighAccuracy:true,maximumAge:5000,timeout:15000}
-  );
 }
-function centerGPS(){
-  if(gpsPos&&leafMap) leafMap.setView([gpsPos.lat,gpsPos.lng],17);
-  else toast('⚠️ Activa GPS primero','err');
+async function admDel(id) {
+  if(!confirm('¿Eliminar este registro del sistema?')) return;
+  const p=sessionStorage.getItem('ap');
+  const r=await apiP({action:'DEL_VUELO',id,password:p});
+  if(r.ok){toast('Registro eliminado','ok');document.getElementById('modal2').classList.remove('open');await loadVuelos(true);}
+  else toast('Error: '+(r.error||''),'err');
 }
+async function delAll() {
+  if(!confirm('⚠ ¿Borrar TODOS los registros?\n\nEsta acción no puede deshacerse.')) return;
+  const p=sessionStorage.getItem('ap'); toast('Borrando registros…','inf');
+  for(const v of [...vuelos]) await apiP({action:'DEL_VUELO',id:v.ID,password:p});
+  toast('Todos los registros eliminados','ok'); await loadVuelos(true);
+}
+function genCod(){const d=new Date();return`AUTH-${d.getFullYear().toString().slice(2)}${(d.getMonth()+1).toString().padStart(2,'0')}${d.getDate().toString().padStart(2,'0')}-${Math.floor(Math.random()*900+100)}`;}
+
+// ══ MODAL ══
+function openModal(id) {
+  const v=vuelos.find(x=>x.ID===id); if(!v) return;
+  const e=v.ESTADO||'PENDIENTE', k=stKey(e);
+  const steps=[
+    {l:'Enviado',i:'📤',d:true},
+    {l:'Revisión',i:'🔍',d:['APROBADO','OBSERVADO','DENEGADO','CONCLUIDO'].includes(e)},
+    {l:e==='DENEGADO'?'Denegado':'Aprobado',i:e==='DENEGADO'?'❌':'✅',d:['APROBADO','CONCLUIDO'].includes(e),rej:e==='DENEGADO'},
+    {l:'Checklist',i:'📋',d:v.CHECKLIST_OK==='SI'},
+    {l:'Concluido',i:'🏁',d:e==='CONCLUIDO'}
+  ];
+  const flow=`<div class="flow">${steps.map((s,i)=>`${i>0?`<div class="fl-line ${s.d?'done':''}"></div>`:''}<div class="fl-s"><div class="fl-d ${s.d?'done':s.rej?'rej':i===1&&e==='PENDIENTE'?'act':''}">${s.i}</div><div class="fl-l">${s.l}</div></div>`).join('')}</div>`;
+  document.getElementById('m-ttl').innerHTML=`<span>${v.LUGAR||'Vuelo'}</span>`;
+  document.getElementById('m-body').innerHTML=`
+    ${flow}
+    ${v.CODIGO_AUTH?`<div class="alert ao" style="margin-bottom:11px"><span style="font-size:14px;flex-shrink:0">✅</span><div>Código de autorización: <strong style="font-family:var(--MONO)">${v.CODIGO_AUTH}</strong></div></div>`:''}
+    ${v.OBSERVACION?`<div class="alert aw" style="margin-bottom:11px"><span style="font-size:14px;flex-shrink:0">⚠</span><div>${v.OBSERVACION}</div></div>`:''}
+    ${e==='DENEGADO'?`<div class="alert ar" style="margin-bottom:11px"><span style="font-size:14px;flex-shrink:0">❌</span><div>Vuelo denegado. No proceder sin nueva autorización del Centro de Control.</div></div>`:''}
+    <div style="background:var(--BG);border:1px solid var(--G5);border-radius:var(--RAD2);padding:13px;font-size:12px;line-height:1.8;margin-bottom:12px">
+      <div style="font-weight:700;margin-bottom:6px;font-size:11px;color:var(--G3);letter-spacing:1px;text-transform:uppercase">Detalles del plan</div>
+      📅 ${fd(v.FECHA)} &nbsp; ⏰ ${v.HORA_INICIO||'--'} → ${v.HORA_FIN||'--'}<br>
+      🚁 ${v.RPA_MODELO||'--'} · S/N: ${v.RPA_SERIE||'--'}<br>
+      📏 Altura: ${v.ALTURA||'--'} m · Misión: ${v.MISION||'--'}<br>
+      ✈ ${v.PILOTO1||''}${v.PILOTO2?' · '+v.PILOTO2:''}<br>
+      🏢 ${v.EMPRESA||''} · ${v.GERENCIA||''}
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+function closeMo(e) { if(!e||e.target===document.getElementById('modal')) document.getElementById('modal').classList.remove('open'); }
 
 // ══ UTILS ══
-function fmtD(d){
-  if(!d) return '--';
-  const s=d.toString();const p=s.split('-');
-  return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:s;
-}
-function toast(msg,type='inf'){
+function fd(d){if(!d)return'--';const s=d.toString(),p=s.split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:s;}
+function toast(msg, type='inf') {
   const el=document.getElementById('toast');
-  el.textContent=msg;el.className=`toast ${type} show`;
-  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2800);
+  const icons={ok:'✓',err:'✕',inf:'ℹ',warn:'⚠'};
+  el.innerHTML=`<span>${icons[type]||'ℹ'}</span><span>${msg}</span>`;
+  el.className=`toast t${type} show`;
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'), 3200);
+}
+
+// ══════════════════════════════════════════════
+//  IA MODULE — SOLO ADMINISTRADOR
+// ══════════════════════════════════════════════
+let iaPeriodo = 'hoy';
+
+function syncIaAccess() {
+  // Muestra/oculta el tab IA y el contenido según sesión admin
+  const tabIA = document.getElementById('t5');
+  if(isAdm) {
+    tabIA.style.display = '';
+    document.getElementById('ia-lock').style.display  = 'none';
+    document.getElementById('ia-panel').style.display = 'block';
+  } else {
+    tabIA.style.display = 'none';
+    document.getElementById('ia-lock').style.display  = 'block';
+    document.getElementById('ia-panel').style.display = 'none';
+  }
+}
+
+function selP(el, p) {
+  document.querySelectorAll('#periodo-grid .pchip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on'); iaPeriodo = p;
+}
+
+// Calcula minutos de vuelo entre dos strings HH:MM
+function calcMins(hi, hf) {
+  if(!hi||!hf) return 0;
+  const [hh1,mm1]=hi.split(':').map(Number);
+  const [hh2,mm2]=hf.split(':').map(Number);
+  const diff = (hh2*60+mm2) - (hh1*60+mm1);
+  return diff > 0 ? diff : 0;
+}
+
+function fmtMins(m) {
+  if(!m) return '—';
+  if(m < 60) return `${m} min`;
+  return `${Math.floor(m/60)}h ${m%60}min`;
+}
+
+// Filtra vuelos según período seleccionado
+function filtrarPorPeriodo(lista) {
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  return lista.filter(v => {
+    if(!v.FECHA) return iaPeriodo==='todo';
+    const fv = new Date(v.FECHA+'T00:00:00');
+    if(iaPeriodo==='hoy')   return fv.toDateString()===hoy.toDateString();
+    if(iaPeriodo==='semana'){ const s=new Date(hoy); s.setDate(hoy.getDate()-7); return fv>=s; }
+    if(iaPeriodo==='mes')   { const m=new Date(hoy); m.setDate(hoy.getDate()-30); return fv>=m; }
+    return true; // todo
+  });
+}
+
+async function generarInforme() {
+  if(!isAdm){ toast('Acceso solo para coordinadores','err'); return; }
+
+  document.getElementById('ia-result-wrap').style.display = 'none';
+  document.getElementById('ia-generating').style.display  = 'block';
+  document.getElementById('btn-generar').disabled = true;
+
+  const steps = ['Filtrando registros por período…','Calculando tiempos por zona…','Analizando patrones operacionales…','Generando informe con IA…'];
+  let si = 0;
+  const stepEl = document.getElementById('ia-gen-step');
+  const stepTimer = setInterval(()=>{ stepEl.textContent = steps[Math.min(si++, steps.length-1)]; }, 900);
+
+  // ── Calcular datos reales ──
+  const lista = filtrarPorPeriodo(vuelos);
+  const periodoLabel = {hoy:'Hoy',semana:'Última semana',mes:'Último mes',todo:'Todos los registros'}[iaPeriodo];
+
+  // Totales
+  const total   = lista.length;
+  const aprobados  = lista.filter(v=>v.ESTADO==='APROBADO'||v.ESTADO==='CONCLUIDO').length;
+  const denegados  = lista.filter(v=>v.ESTADO==='DENEGADO').length;
+  const pendientes = lista.filter(v=>v.ESTADO==='PENDIENTE').length;
+  const conCL      = lista.filter(v=>v.CHECKLIST_OK==='SI').length;
+
+  // Minutos totales y por zona
+  let minTotales = 0;
+  const zonaMap = {};
+  lista.forEach(v => {
+    const mins = calcMins(v.HORA_INICIO, v.HORA_FIN);
+    minTotales += mins;
+    const zona = v.LUGAR || 'Sin especificar';
+    if(!zonaMap[zona]) zonaMap[zona] = { vuelos:0, mins:0 };
+    zonaMap[zona].vuelos++;
+    zonaMap[zona].mins += mins;
+  });
+
+  // Ordenar zonas por vuelos desc
+  const zonas = Object.entries(zonaMap).sort((a,b)=>b[1].vuelos-a[1].vuelos);
+  const maxVuelos = zonas.length ? zonas[0][1].vuelos : 1;
+
+  // Construir JSON para la IA
+  const datosParaIA = {
+    periodo: periodoLabel,
+    totalVuelos: total,
+    aprobados, denegados, pendientes,
+    conChecklist: conCL,
+    minutosVuelo: minTotales,
+    tasaAprobacion: total ? Math.round(aprobados/total*100) : 0,
+    porZona: zonas.map(([z,d])=>({ zona:z, vuelos:d.vuelos, minutos:d.mins })),
+    pilotosUnicos: [...new Set(lista.map(v=>v.PILOTO1).filter(Boolean))].length,
+    misionesUnicas: [...new Set(lista.map(v=>v.MISION).filter(Boolean))],
+  };
+
+  // ── Llamada a Claude API ──
+  let textoIA = '';
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages:[{
+          role:'user',
+          content:`Eres el asistente de operaciones RPAS de Minera Las Bambas (MMG), Perú. Genera un informe operacional conciso en español para el Coordinador del Centro de Control, basado en estos datos reales del sistema:
+
+${JSON.stringify(datosParaIA, null, 2)}
+
+El informe debe tener exactamente estas 4 secciones con sus títulos en mayúsculas:
+
+RESUMEN EJECUTIVO
+(2-3 oraciones resumiendo el período, total de vuelos y tiempo de operación total)
+
+OPERACIONES POR ZONA
+(analiza las zonas con más actividad y tiempo acumulado, señala la zona más operativa)
+
+CUMPLIMIENTO OPERACIONAL
+(evalúa tasa de aprobación, checklist completados, vuelos denegados si hay; menciona si hay incidencias)
+
+RECOMENDACIONES
+(2-3 recomendaciones concretas y accionables basadas en los datos, orientadas a mejorar eficiencia o seguridad)
+
+Sé directo, profesional y usa los datos reales. No inventes datos. Si el período no tiene vuelos, indícalo claramente.`
+        }]
+      })
+    });
+    const data = await resp.json();
+    textoIA = data.content?.[0]?.text || '';
+  } catch(e) {
+    textoIA = 'Error al conectar con el servicio de IA. Verifica tu conexión e intenta nuevamente.';
+  }
+
+  clearInterval(stepTimer);
+  document.getElementById('ia-generating').style.display = 'none';
+  document.getElementById('btn-generar').disabled = false;
+
+  // ── Renderizar métricas ──
+  const tasaColor = datosParaIA.tasaAprobacion>=80?'var(--GRN)':datosParaIA.tasaAprobacion>=50?'var(--YLW)':'var(--R)';
+  document.getElementById('ia-metrics').innerHTML = `
+    <div class="metric-mini">
+      <div class="metric-mini-n" style="color:var(--R)">${total}</div>
+      <div class="metric-mini-l">Vuelos</div>
+    </div>
+    <div class="metric-mini">
+      <div class="metric-mini-n" style="color:${tasaColor}">${datosParaIA.tasaAprobacion}%</div>
+      <div class="metric-mini-l">Aprobación</div>
+    </div>
+    <div class="metric-mini">
+      <div class="metric-mini-n" style="color:var(--BLU);font-size:16px">${fmtMins(minTotales)}</div>
+      <div class="metric-mini-l">T. vuelo</div>
+    </div>`;
+
+  // ── Renderizar tabla de zonas ──
+  if(zonas.length) {
+    document.getElementById('ia-zonas-table').innerHTML = zonas.map(([z,d])=>`
+      <div class="zona-row">
+        <div class="zona-name">${z}</div>
+        <div><div class="zona-bar-wrap"><div class="zona-bar" style="width:${Math.round(d.vuelos/maxVuelos*100)}%"></div></div></div>
+        <div class="zona-count">${d.vuelos} vuelo${d.vuelos!==1?'s':''}</div>
+        <div class="zona-time">⏱ ${fmtMins(d.mins)}</div>
+      </div>`).join('');
+  } else {
+    document.getElementById('ia-zonas-table').innerHTML = `<div style="padding:16px;text-align:center;color:var(--G4);font-size:12px">Sin registros en este período</div>`;
+  }
+
+  // ── Renderizar texto IA formateado ──
+  const secciones = ['RESUMEN EJECUTIVO','OPERACIONES POR ZONA','CUMPLIMIENTO OPERACIONAL','RECOMENDACIONES'];
+  let html = textoIA;
+  secciones.forEach(s => {
+    html = html.replace(new RegExp(s,'g'), `<div class="ia-section-title">${s}</div>`);
+  });
+  // Convertir líneas con - o • en bullets
+  html = html.split('\n').map(l => {
+    const t = l.trim();
+    if(!t) return '<br>';
+    if(t.startsWith('-')||t.startsWith('•')) return `<div class="ia-bullet">${t.replace(/^[-•]\s*/,'')}</div>`;
+    if(t.startsWith('<div class="ia-section-title">')) return `<div class="ia-section" style="margin-top:14px">${t}`;
+    return `<div class="ia-para">${t}</div>`;
+  }).join('');
+
+  document.getElementById('ia-texto').innerHTML = html;
+  document.getElementById('ia-ts').textContent = new Date().toLocaleString('es-PE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  document.getElementById('ia-result-wrap').style.display = 'block';
+}
+
+function copiarInforme() {
+  const txt = document.getElementById('ia-texto')?.innerText || '';
+  const zonas = document.getElementById('ia-zonas-table')?.innerText || '';
+  navigator.clipboard.writeText(`INFORME OPERACIONAL RPAS — MMG LAS BAMBAS\n${'─'.repeat(40)}\n\nZONAS:\n${zonas}\n\n${txt}`)
+    .then(()=>toast('Informe copiado al portapapeles','ok'))
+    .catch(()=>toast('No se pudo copiar','err'));
 }
 </script>
 </body>
