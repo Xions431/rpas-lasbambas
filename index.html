@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>RPAS OPS · Las Bambas</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"/>
+<style>
+:root{--bg:#090e1a;--bg2:#0d1526;--bg3:#111d35;--card:#0f1a2e;--border:#1e3356;--accent:#00d4ff;--accent2:#ff6b35;--green:#00ff88;--yellow:#ffd60a;--red:#ff3355;--text:#e8f4ff;--muted:#6b8aad}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Exo 2',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(0,80,160,.15),transparent 60%),radial-gradient(ellipse at 80% 80%,rgba(0,212,255,.08),transparent 50%);pointer-events:none;z-index:0}
+.header{position:sticky;top:0;z-index:100;background:rgba(9,14,26,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.header-brand{display:flex;align-items:center;gap:10px}
+.drone-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--accent),#0088cc);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 20px rgba(0,212,255,.4);animation:pulse 3s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 15px rgba(0,212,255,.3)}50%{box-shadow:0 0 35px rgba(0,212,255,.8)}}
+.brand-name{font-family:'Rajdhani',sans-serif;font-size:19px;font-weight:700;letter-spacing:2px;color:var(--accent);text-shadow:0 0 15px rgba(0,212,255,.5)}
+.brand-sub{font-size:10px;color:var(--muted);letter-spacing:1px}
+.header-right{display:flex;align-items:center;gap:8px}
+.status-pill{display:flex;align-items:center;gap:5px;background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);border-radius:20px;padding:4px 10px;font-size:11px;color:var(--green);font-family:'Space Mono',monospace}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.admin-badge{display:flex;align-items:center;gap:5px;background:rgba(255,107,53,.1);border:1px solid rgba(255,107,53,.4);border-radius:20px;padding:4px 10px;font-size:11px;color:var(--accent2);font-family:'Space Mono',monospace;cursor:pointer}
+.admin-badge.off{background:rgba(107,138,173,.08);border-color:rgba(107,138,173,.2);color:var(--muted)}
+.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:63px;z-index:99}
+.tab{flex:1;padding:11px 4px;text-align:center;font-size:13px;font-weight:600;letter-spacing:.5px;color:var(--muted);cursor:pointer;border:none;background:transparent;transition:all .25s;position:relative;text-transform:uppercase;font-family:'Rajdhani',sans-serif}
+.tab.active{color:var(--accent)}
+.tab.active::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:2px;background:var(--accent);box-shadow:0 0 8px var(--accent);border-radius:2px 2px 0 0}
+.tab-icon{font-size:15px;display:block;margin-bottom:1px}
+.screen{display:none;padding:14px;position:relative;z-index:1;padding-bottom:30px}
+.screen.active{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.4}
+.card-title{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.field-group{margin-bottom:13px}
+.field-label{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;display:block}
+.field-input,.field-select{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;font-family:'Exo 2',sans-serif;outline:none;transition:all .2s;-webkit-appearance:none}
+.field-input:focus,.field-select:focus{border-color:var(--accent);background:rgba(0,212,255,.06);box-shadow:0 0 0 3px rgba(0,212,255,.1)}
+.field-select option{background:var(--bg3)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-primary{width:100%;padding:15px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),#0088cc);color:#000;font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all .2s;box-shadow:0 4px 20px rgba(0,212,255,.35)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{width:100%;padding:12px;border:1px solid var(--accent);border-radius:12px;background:transparent;color:var(--accent);font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s;text-transform:uppercase}
+.btn-danger{padding:10px 14px;border:1px solid var(--red);border-radius:8px;background:transparent;color:var(--red);font-size:13px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:600}
+.btn-success{padding:10px 14px;border:1px solid var(--green);border-radius:8px;background:rgba(0,255,136,.1);color:var(--green);font-size:13px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:600}
+.btn-warn{padding:10px 14px;border:1px solid var(--yellow);border-radius:8px;background:rgba(255,214,10,.08);color:var(--yellow);font-size:13px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:600}
+.rpa-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.rpa-option{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;transition:all .2s;text-align:center}
+.rpa-option.selected{border-color:var(--accent);background:rgba(0,212,255,.08)}
+.rpa-option .rpa-name{font-size:13px;font-weight:600;color:var(--text)}
+.rpa-option .rpa-icon{font-size:22px;margin-bottom:4px}
+.msg-preview{background:#0d1f0d;border:1px solid rgba(0,255,136,.2);border-radius:12px;padding:14px;font-family:'Space Mono',monospace;font-size:11px;line-height:1.9;color:#a8ffcc;white-space:pre-wrap;word-break:break-word;margin-top:4px}
+.vuelo-item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;position:relative;overflow:hidden}
+.vuelo-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:2px 0 0 2px}
+.vuelo-item.PENDIENTE::before{background:var(--yellow)}
+.vuelo-item.AUTORIZADO::before{background:var(--green)}
+.vuelo-item.RECHAZADO::before{background:var(--red)}
+.vuelo-item.CONCLUIDO::before{background:var(--muted)}
+.vuelo-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.vuelo-lugar{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--text);letter-spacing:1px}
+.vuelo-badge{font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 8px;border-radius:20px;text-transform:uppercase;font-family:'Space Mono',monospace}
+.badge-PENDIENTE{background:rgba(255,214,10,.15);color:var(--yellow);border:1px solid rgba(255,214,10,.3)}
+.badge-AUTORIZADO{background:rgba(0,255,136,.15);color:var(--green);border:1px solid rgba(0,255,136,.3)}
+.badge-RECHAZADO{background:rgba(255,51,85,.15);color:var(--red);border:1px solid rgba(255,51,85,.3)}
+.badge-CONCLUIDO{background:rgba(107,138,173,.15);color:var(--muted);border:1px solid rgba(107,138,173,.3)}
+.vuelo-meta{display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px;color:var(--muted)}
+.vuelo-meta span{display:flex;align-items:center;gap:4px}
+.vuelo-meta strong{color:var(--text)}
+.vuelo-footer{display:flex;gap:8px;margin-top:10px;align-items:center}
+.vuelo-piloto{flex:1;font-size:12px;color:var(--muted)}
+.vuelo-piloto strong{color:var(--accent);font-size:13px}
+.admin-lock{background:rgba(255,107,53,.06);border:1px solid rgba(255,107,53,.3);border-radius:16px;padding:24px;margin-bottom:12px;text-align:center}
+.admin-lock-icon{font-size:48px;margin-bottom:12px}
+.admin-lock-title{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;letter-spacing:2px;color:var(--accent2);margin-bottom:8px}
+.admin-lock-sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.admin-input{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,107,53,.4);border-radius:10px;padding:14px;color:var(--text);font-size:18px;font-family:'Space Mono',monospace;outline:none;text-align:center;letter-spacing:4px;margin-bottom:12px}
+.admin-input:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(255,107,53,.15)}
+.btn-admin{width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent2),#cc4400);color:#fff;font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;letter-spacing:2px;cursor:pointer;text-transform:uppercase;box-shadow:0 4px 20px rgba(255,107,53,.35)}
+.admin-active-bar{background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.3);border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.admin-active-info{font-size:13px;color:var(--accent2);font-weight:600;display:flex;align-items:center;gap:6px}
+.btn-logout{padding:7px 14px;border:1px solid rgba(255,107,53,.4);border-radius:8px;background:transparent;color:var(--accent2);font-size:12px;cursor:pointer;font-family:'Exo 2',sans-serif}
+.sync-bar{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:9px 14px;margin-bottom:12px;font-size:12px;color:var(--muted)}
+.sync-btn{padding:5px 12px;border:1px solid var(--accent);border-radius:8px;background:transparent;color:var(--accent);font-size:12px;cursor:pointer;font-family:'Exo 2',sans-serif}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);padding:12px 20px;border-radius:12px;font-weight:700;font-size:14px;z-index:9999;opacity:0;transition:all .3s;white-space:nowrap;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{background:var(--green);color:#000;box-shadow:0 4px 20px rgba(0,255,136,.4)}
+.toast.error{background:var(--red);color:#fff;box-shadow:0 4px 20px rgba(255,51,85,.4)}
+.toast.info{background:var(--accent);color:#000;box-shadow:0 4px 20px rgba(0,212,255,.4)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;display:none;align-items:flex-end;backdrop-filter:blur(6px)}
+.modal-overlay.open{display:flex}
+.modal{width:100%;background:var(--bg2);border-radius:24px 24px 0 0;border:1px solid var(--border);padding:20px;max-height:85vh;overflow-y:auto;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;display:block}
+.modal-title{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;letter-spacing:2px;color:var(--accent);margin-bottom:16px;text-transform:uppercase}
+.loading{text-align:center;padding:30px;color:var(--muted)}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{text-align:center;padding:40px;color:var(--muted)}
+#map{width:100%;height:calc(100vh - 210px);border-radius:16px;border:1px solid var(--border);overflow:hidden}
+.map-toolbar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.map-btn{padding:8px 14px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--text);font-family:'Exo 2',sans-serif;display:flex;align-items:center;gap:5px}
+.map-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.1)}
+.map-info{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-top:10px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-brand">
+    <div class="drone-icon">🚁</div>
+    <div>
+      <div class="brand-name">RPAS OPS</div>
+      <div class="brand-sub">LAS BAMBAS · MINERA</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="status-pill" id="conn-status"><div class="dot"></div>SYNC</div>
+    <div class="admin-badge off" id="admin-badge-hdr" onclick="goAdmin()">🔒 ADMIN</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('registro',this)"><span class="tab-icon">📋</span>Registro</button>
+  <button class="tab" onclick="switchTab('vuelos',this)"><span class="tab-icon">📡</span>Vuelos</button>
+  <button class="tab" onclick="switchTab('mapa',this)"><span class="tab-icon">🗺️</span>Mapa</button>
+  <button class="tab" onclick="switchTab('admin',this)"><span class="tab-icon">🔐</span>Admin</button>
+</div>
+
+<!-- ══ REGISTRO ══ -->
+<div class="screen active" id="screen-registro">
+  <div class="card">
+    <div class="card-title">📍 Ubicación del Vuelo</div>
+    <div class="field-group">
+      <label class="field-label">Lugar / Tajo</label>
+      <select class="field-select" id="lugar" onchange="lugarChange();updatePreview()">
+        <option value="">— Seleccionar —</option>
+        <option>TAJO FERROBAMBA</option>
+        <option>TAJO CHALCOBAMBA</option>
+        <option>TAJO SULFOBAMBA</option>
+        <option>BOTADERO NORTE</option>
+        <option>BOTADERO SUR</option>
+        <option>PLANTA CONCENTRADORA</option>
+        <option>RELAVERA</option>
+        <option value="OTRO">Otro...</option>
+      </select>
+    </div>
+    <div class="field-group" id="otro-wrap" style="display:none">
+      <label class="field-label">Especificar Lugar</label>
+      <input class="field-input" id="lugar-otro" placeholder="Escribir ubicación..." oninput="updatePreview()">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📅 Fecha y Hora</div>
+    <div class="field-group">
+      <label class="field-label">Fecha</label>
+      <input type="date" class="field-input" id="fecha" oninput="updatePreview()">
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">Hora Inicio</label>
+        <input type="time" class="field-input" id="hora-inicio" oninput="updatePreview()">
+      </div>
+      <div class="field-group">
+        <label class="field-label">Hora Fin</label>
+        <input type="time" class="field-input" id="hora-fin" oninput="updatePreview()">
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Altura de Vuelo (m)</label>
+      <input type="number" class="field-input" id="altura" placeholder="Ej: 250" oninput="updatePreview()">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🚁 Aeronave RPA</div>
+    <div class="rpa-grid">
+      <div class="rpa-option selected" onclick="selectRPA(this,'Matrice M300 RTK')"><div class="rpa-icon">🔵</div><div class="rpa-name">M300 RTK</div></div>
+      <div class="rpa-option" onclick="selectRPA(this,'Mavic 3E')"><div class="rpa-icon">🟢</div><div class="rpa-name">Mavic 3E</div></div>
+      <div class="rpa-option" onclick="selectRPA(this,'Phantom 4 RTK')"><div class="rpa-icon">⚪</div><div class="rpa-name">Phantom 4 RTK</div></div>
+      <div class="rpa-option" onclick="selectRPA(this,'Otro')"><div class="rpa-icon">➕</div><div class="rpa-name">Otro</div></div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Número de Serie</label>
+      <input class="field-input" id="serie" placeholder="Ej: 1ZNBL2800C00JM/..." oninput="updatePreview()">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Tipo de Misión</label>
+      <select class="field-select" id="mision" onchange="updatePreview()">
+        <option>fotogrametría</option>
+        <option>inspección</option>
+        <option>topografía</option>
+        <option>supervisión</option>
+        <option>seguridad</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">👨‍✈️ Piloto(s)</div>
+    <div class="field-group">
+      <label class="field-label">Piloto Principal</label>
+      <input class="field-input" id="piloto1" placeholder="Nombre completo" oninput="updatePreview()">
+    </div>
+    <div class="field-group">
+      <label class="field-label">DNI Piloto Principal</label>
+      <input type="number" class="field-input" id="dni1" placeholder="Número de DNI" oninput="updatePreview()">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Co-Piloto (opcional)</label>
+      <input class="field-input" id="piloto2" placeholder="Nombre completo" oninput="updatePreview()">
+    </div>
+    <div class="field-group">
+      <label class="field-label">DNI Co-Piloto</label>
+      <input type="number" class="field-input" id="dni2" placeholder="Número de DNI" oninput="updatePreview()">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Gerencia</label>
+      <select class="field-select" id="gerencia" onchange="updatePreview()">
+        <option>SS-TT</option><option>PI</option><option>OPERACIONES</option>
+        <option>MINA</option><option>MEDIO AMBIENTE</option><option>SEGURIDAD</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💬 Vista Previa del Mensaje</div>
+    <div class="msg-preview" id="msg-preview" style="color:var(--muted)">// Complete los campos para generar el mensaje...</div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn-secondary" onclick="copyMsg()" style="flex:1">📋 Copiar</button>
+      <button class="btn-primary" id="btn-reg" onclick="submitVuelo()" style="flex:2">✈️ REGISTRAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VUELOS ══ -->
+<div class="screen" id="screen-vuelos">
+  <div class="sync-bar">
+    <span id="sync-label">Cargando...</span>
+    <button class="sync-btn" onclick="loadVuelos()">🔄 Actualizar</button>
+  </div>
+  <div id="vuelos-list">
+    <div class="loading"><div class="spinner"></div>Conectando con Google Sheets...</div>
+  </div>
+</div>
+
+<!-- ══ MAPA ══ -->
+<div class="screen" id="screen-mapa">
+  <div class="map-toolbar">
+    <button class="map-btn active" id="btn-poly" onclick="activateTool('polygon')">✏️ Zona</button>
+    <button class="map-btn" id="btn-circ" onclick="activateTool('circle')">⭕ Círculo</button>
+    <button class="map-btn" onclick="clearMap()">🗑️ Limpiar</button>
+    <button class="map-btn" id="btn-sat" onclick="toggleSat()">🛰️ Satélite</button>
+  </div>
+  <div id="map"></div>
+  <div class="map-info"><span>💡</span><span id="map-hint">Toca <strong>Zona</strong> y dibuja el área de sobrevuelo en el mapa</span></div>
+</div>
+
+<!-- ══ ADMIN ══ -->
+<div class="screen" id="screen-admin">
+  <div id="admin-locked">
+    <div class="admin-lock">
+      <div class="admin-lock-icon">🔐</div>
+      <div class="admin-lock-title">PANEL ADMINISTRADOR</div>
+      <div class="admin-lock-sub">Solo el administrador autoriza, rechaza o elimina vuelos.<br>El personal solo puede registrar vuelos.</div>
+      <input type="password" class="admin-input" id="admin-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()">
+      <button class="btn-admin" onclick="adminLogin()">🔓 INGRESAR AL PANEL</button>
+    </div>
+  </div>
+
+  <div id="admin-unlocked" style="display:none">
+    <div class="admin-active-bar">
+      <div class="admin-active-info">🟠 MODO ADMINISTRADOR ACTIVO</div>
+      <button class="btn-logout" onclick="adminLogout()">🔒 Salir</button>
+    </div>
+    <div class="sync-bar">
+      <span id="admin-sync-label">Cargando vuelos...</span>
+      <button class="sync-btn" onclick="loadVuelos(true)">🔄 Actualizar</button>
+    </div>
+    <div id="admin-list">
+      <div class="loading"><div class="spinner"></div>Cargando...</div>
+    </div>
+    <div class="card" style="border-color:rgba(255,51,85,.25);margin-top:8px">
+      <div class="card-title" style="color:var(--red)">⚠️ Zona Peligro</div>
+      <button class="btn-danger" style="width:100%;padding:13px" onclick="clearAllAdmin()">🗑️ Borrar TODOS los registros del Sheet</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal">
+    <span class="modal-handle"></span>
+    <div class="modal-title" id="modal-title"></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbwLR-vsmrYSqKSiKauKVRZpd_x1zI_WDgcOIiRo5u39DhXT_isWeCuzZ9lyvnrIEYeO/exec';
+
+let vuelos = [], selectedRPA = 'Matrice M300 RTK', isAdmin = false;
+let leafMap, drawn, isSat = false, tileL, satL;
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+  updatePreview();
+  loadVuelos();
+  setInterval(loadVuelos, 30000);
+});
+
+// ── API ──
+async function apiGet() {
+  try {
+    const r = await fetch(API + '?t=' + Date.now());
+    return await r.json();
+  } catch(e) { return {ok:false, error:e.toString()}; }
+}
+async function apiPost(body) {
+  try {
+    const r = await fetch(API, { method:'POST', body: JSON.stringify(body) });
+    return await r.json();
+  } catch(e) { return {ok:false, error:e.toString()}; }
+}
+
+// ── LOAD ──
+async function loadVuelos(fromAdmin) {
+  const d = await apiGet();
+  if (d.ok) {
+    vuelos = (d.vuelos || []).sort((a,b) => (b.TIMESTAMP||'').localeCompare(a.TIMESTAMP||''));
+    const t = new Date().toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('sync-label').textContent = `Sync ${t} · ${vuelos.length} vuelos`;
+    setConn(true); renderVuelos();
+    if (isAdmin || fromAdmin) renderAdminList();
+  } else {
+    setConn(false);
+    document.getElementById('sync-label').textContent = '⚠️ Sin conexión con Google Sheets';
+  }
+}
+
+function setConn(ok) {
+  const el = document.getElementById('conn-status');
+  el.style.color = ok ? 'var(--green)' : 'var(--red)';
+  el.style.borderColor = ok ? 'rgba(0,255,136,.3)' : 'rgba(255,51,85,.3)';
+}
+
+// ── TABS ──
+function switchTab(tab, btn) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('screen-' + tab).classList.add('active');
+  btn.classList.add('active');
+  if (tab === 'mapa' && !leafMap) initMap();
+  if (tab === 'vuelos') loadVuelos();
+  if (tab === 'admin' && isAdmin) renderAdminList();
+}
+function goAdmin() {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab')[3].classList.add('active');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-admin').classList.add('active');
+}
+
+// ── FORM ──
+function lugarChange() {
+  document.getElementById('otro-wrap').style.display =
+    document.getElementById('lugar').value === 'OTRO' ? 'block' : 'none';
+}
+function selectRPA(el, name) {
+  document.querySelectorAll('.rpa-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected'); selectedRPA = name; updatePreview();
+}
+function getLugar() {
+  const v = document.getElementById('lugar').value;
+  return v === 'OTRO' ? document.getElementById('lugar-otro').value.toUpperCase() : v;
+}
+
+// ── MESSAGE ──
+function buildMessage() {
+  const lugar = getLugar();
+  const fecha = document.getElementById('fecha').value;
+  if (!lugar || !fecha) return null;
+  const [y,m,d] = fecha.split('-');
+  const hi = document.getElementById('hora-inicio').value;
+  const hf = document.getElementById('hora-fin').value;
+  const alt = document.getElementById('altura').value;
+  const serie = document.getElementById('serie').value;
+  const p1 = document.getElementById('piloto1').value;
+  const d1 = document.getElementById('dni1').value;
+  const p2 = document.getElementById('piloto2').value;
+  const d2 = document.getElementById('dni2').value;
+  const ger = document.getElementById('gerencia').value;
+  const mis = document.getElementById('mision').value;
+  let msg = `BUENOS DÍAS\nINFORMO PLAN DE VUELO.\nLUGAR: ${lugar}\nFecha: ${d}/${m}/${y}\n`;
+  if (hi||hf) msg += `Hora:  ${hi||'--:--'} AM @ ${hf||'--:--'} AM\n`;
+  if (alt) msg += `Altura de vuelo: ${alt} m\n`;
+  msg += `RPA: ${selectedRPA}`;
+  if (serie) msg += ` serie: ${serie}`;
+  msg += `\n${mis}.\n`;
+  if (p1) msg += p2 ? `Piloto: ${p1}/${p2}\nDNI: ${d1||'---'}/${d2||'---'}\n` : `Piloto: ${p1}\n${d1?'DNI: '+d1+'\n':''}`;
+  msg += `Empresa: MINERA LAS BAMBAS.\nGerencia- ${ger}.`;
+  return msg;
+}
+function updatePreview() {
+  const msg = buildMessage();
+  const el = document.getElementById('msg-preview');
+  el.textContent = msg || '// Complete los campos para generar el mensaje...';
+  el.style.color = msg ? '#a8ffcc' : 'var(--muted)';
+}
+function copyMsg() {
+  const msg = buildMessage();
+  if (!msg) { toast('⚠️ Complete los campos', 'error'); return; }
+  navigator.clipboard.writeText(msg).then(() => toast('✅ Copiado al portapapeles!', 'success')).catch(() => toast('✅ Copiado!', 'success'));
+}
+
+// ── SUBMIT ──
+async function submitVuelo() {
+  const lugar = getLugar();
+  if (!lugar) { toast('⚠️ Selecciona el lugar', 'error'); return; }
+  if (!document.getElementById('piloto1').value.trim()) { toast('⚠️ Ingresa el nombre del piloto', 'error'); return; }
+  const btn = document.getElementById('btn-reg');
+  btn.disabled = true; btn.textContent = '⏳ ENVIANDO...';
+  const r = await apiPost({ action:'ADD', vuelo:{
+    lugar, fecha: document.getElementById('fecha').value,
+    horaInicio: document.getElementById('hora-inicio').value,
+    horaFin: document.getElementById('hora-fin').value,
+    altura: document.getElementById('altura').value,
+    rpa: selectedRPA, serie: document.getElementById('serie').value,
+    mision: document.getElementById('mision').value,
+    piloto1: document.getElementById('piloto1').value,
+    dni1: document.getElementById('dni1').value,
+    piloto2: document.getElementById('piloto2').value,
+    dni2: document.getElementById('dni2').value,
+    gerencia: document.getElementById('gerencia').value,
+    mensaje: buildMessage()
+  }});
+  btn.disabled = false; btn.textContent = '✈️ REGISTRAR';
+  if (r.ok) { toast('✅ Vuelo registrado en Google Sheets!', 'success'); loadVuelos(); }
+  else toast('❌ Error: ' + (r.error || 'Sin conexión'), 'error');
+}
+
+// ── RENDER VUELOS (personal) ──
+function renderVuelos() {
+  const el = document.getElementById('vuelos-list');
+  if (!vuelos.length) {
+    el.innerHTML = `<div class="empty-state"><div style="font-size:42px">📡</div><div style="font-size:14px;margin-top:10px">No hay vuelos registrados</div><div style="font-size:12px;margin-top:6px;color:var(--muted)">Ve a Registro para agregar el primero</div></div>`;
+    return;
+  }
+  el.innerHTML = vuelos.map(v => `
+    <div class="vuelo-item ${v.ESTADO||'PENDIENTE'}" onclick="openModal('${v.ID}')">
+      <div class="vuelo-header">
+        <div class="vuelo-lugar">${v.LUGAR||''}</div>
+        <div class="vuelo-badge badge-${v.ESTADO||'PENDIENTE'}">${v.ESTADO||'PENDIENTE'}</div>
+      </div>
+      <div class="vuelo-meta">
+        <span>📅 <strong>${fmtDate(v.FECHA)}</strong></span>
+        <span>⏰ <strong>${v.HORA_INICIO||'--'} → ${v.HORA_FIN||'--'}</strong></span>
+        <span>📏 <strong>${v.ALTURA?v.ALTURA+'m':'--'}</strong></span>
+        <span>🚁 <strong>${(v.RPA||'').split(' ').slice(0,2).join(' ')}</strong></span>
+      </div>
+      <div class="vuelo-footer">
+        <div class="vuelo-piloto">✈️ <strong>${v.PILOTO1||''}${v.PILOTO2?'/'+v.PILOTO2:''}</strong></div>
+        <div style="font-size:11px;color:var(--muted)">${v.GERENCIA||''}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── RENDER ADMIN LIST ──
+function renderAdminList() {
+  const el = document.getElementById('admin-list');
+  document.getElementById('admin-sync-label').textContent = `${vuelos.length} vuelos en total`;
+  if (!vuelos.length) {
+    el.innerHTML = `<div class="empty-state"><div style="font-size:42px">📋</div><div style="font-size:14px;margin-top:10px">Sin vuelos registrados</div></div>`;
+    return;
+  }
+  el.innerHTML = vuelos.map(v => `
+    <div class="vuelo-item ${v.ESTADO||'PENDIENTE'}">
+      <div class="vuelo-header">
+        <div class="vuelo-lugar">${v.LUGAR||''}</div>
+        <div class="vuelo-badge badge-${v.ESTADO||'PENDIENTE'}">${v.ESTADO||'PENDIENTE'}</div>
+      </div>
+      <div class="vuelo-meta">
+        <span>📅 <strong>${fmtDate(v.FECHA)}</strong></span>
+        <span>⏰ <strong>${v.HORA_INICIO||'--'} → ${v.HORA_FIN||'--'}</strong></span>
+        <span>🚁 <strong>${(v.RPA||'').split(' ').slice(0,2).join(' ')}</strong></span>
+        <span>👤 <strong>${v.PILOTO1||''}</strong></span>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px">DNI: <span style="color:var(--text)">${v.DNI1||'--'}</span> · ${v.GERENCIA||''}</div>
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+        ${v.ESTADO==='PENDIENTE'?`
+          <button class="btn-success" onclick="adminAction('AUTORIZAR','${v.ID}')">✓ Autorizar</button>
+          <button class="btn-danger" onclick="adminAction('RECHAZAR','${v.ID}')">✗ Rechazar</button>
+        `:''}
+        ${v.ESTADO==='AUTORIZADO'?`<button class="btn-warn" onclick="adminAction('CONCLUIR','${v.ID}')">☑ Concluir</button>`:''}
+        <button class="btn-secondary" style="padding:8px 12px;font-size:12px;width:auto" onclick="copyVueloMsg('${v.ID}')">📋 Copiar</button>
+        <button class="btn-danger" onclick="adminAction('DELETE','${v.ID}')" style="margin-left:auto">🗑️ Eliminar</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── ADMIN LOGIN / LOGOUT ──
+function adminLogin() {
+  const pass = document.getElementById('admin-pass').value;
+  if (!pass) { toast('⚠️ Ingresa la contraseña', 'error'); return; }
+  sessionStorage.setItem('ap', pass);
+  isAdmin = true;
+  document.getElementById('admin-locked').style.display = 'none';
+  document.getElementById('admin-unlocked').style.display = 'block';
+  document.getElementById('admin-badge-hdr').className = 'admin-badge';
+  document.getElementById('admin-badge-hdr').innerHTML = '🟠 ADMIN';
+  toast('✅ Acceso de administrador activo', 'success');
+  renderAdminList();
+}
+function adminLogout() {
+  isAdmin = false; sessionStorage.removeItem('ap');
+  document.getElementById('admin-locked').style.display = 'block';
+  document.getElementById('admin-unlocked').style.display = 'none';
+  document.getElementById('admin-pass').value = '';
+  document.getElementById('admin-badge-hdr').className = 'admin-badge off';
+  document.getElementById('admin-badge-hdr').innerHTML = '🔒 ADMIN';
+  toast('Sesión cerrada', 'info');
+}
+
+// ── ADMIN ACTIONS ──
+async function adminAction(action, id) {
+  const pass = sessionStorage.getItem('ap');
+  if (!pass) { toast('⚠️ Sesión expirada', 'error'); adminLogout(); return; }
+  const labels = {AUTORIZAR:'⏳ Autorizando...',RECHAZAR:'⏳ Rechazando...',CONCLUIR:'⏳ Concluyendo...',DELETE:'⏳ Eliminando...'};
+  toast(labels[action]||'⏳ Procesando...', 'info');
+  const r = await apiPost({ action, id, password: pass });
+  if (r.ok) {
+    const ok = {AUTORIZAR:'✅ VUELO AUTORIZADO',RECHAZAR:'❌ Vuelo rechazado',CONCLUIR:'☑ Vuelo concluido',DELETE:'🗑️ Vuelo eliminado'};
+    toast(ok[action]||'✅ Hecho', 'success');
+    await loadVuelos(true);
+  } else {
+    if (r.error === 'Contraseña incorrecta') { toast('❌ Contraseña incorrecta — sesión cerrada', 'error'); adminLogout(); }
+    else toast('❌ Error: ' + (r.error||'Sin conexión'), 'error');
+  }
+}
+async function clearAllAdmin() {
+  if (!confirm('¿BORRAR TODOS los vuelos del Google Sheet?\n\nEsta acción NO se puede deshacer.')) return;
+  const pass = sessionStorage.getItem('ap');
+  toast('⏳ Borrando todos los registros...', 'info');
+  for (const v of [...vuelos]) await apiPost({action:'DELETE', id:v.ID, password:pass});
+  toast('🗑️ Todos los registros borrados', 'success');
+  await loadVuelos(true);
+}
+
+// ── MODAL ──
+function openModal(id) {
+  const v = vuelos.find(x => x.ID === id);
+  if (!v) return;
+  document.getElementById('modal-title').textContent = v.LUGAR||'';
+  document.getElementById('modal-body').innerHTML = `
+    <div class="msg-preview" style="margin-bottom:14px">${v.MENSAJE||'Sin mensaje registrado'}</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn-secondary" style="flex:1" onclick="copyVueloMsg('${id}')">📋 Copiar Mensaje</button>
+      <div class="vuelo-badge badge-${v.ESTADO||'PENDIENTE'}" style="padding:10px 14px">${v.ESTADO||'PENDIENTE'}</div>
+    </div>`;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function copyVueloMsg(id) {
+  const v = vuelos.find(x => x.ID === id);
+  if (v?.MENSAJE) { navigator.clipboard.writeText(v.MENSAJE).catch(()=>{}); toast('✅ Mensaje copiado!', 'success'); closeModal(); }
+}
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal-overlay'))
+    document.getElementById('modal-overlay').classList.remove('open');
+}
+
+// ── MAP ──
+function initMap() {
+  leafMap = L.map('map', { center:[-14.0522,-72.2137], zoom:14 });
+  tileL = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19}).addTo(leafMap);
+  satL = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {maxZoom:19});
+  drawn = new L.FeatureGroup().addTo(leafMap);
+  const dc = new L.Control.Draw({
+    draw:{ polygon:{shapeOptions:{color:'#00d4ff',fillColor:'#00d4ff',fillOpacity:.25,weight:2}}, circle:{shapeOptions:{color:'#ff6b35',fillColor:'#ff6b35',fillOpacity:.2,weight:2}}, rectangle:false, marker:false, polyline:false, circlemarker:false },
+    edit:{ featureGroup:drawn }
+  });
+  leafMap.addControl(dc);
+  leafMap.on(L.Draw.Event.CREATED, e => { drawn.addLayer(e.layer); document.getElementById('map-hint').innerHTML='✅ Zona de sobrevuelo marcada en el mapa'; });
+  [['Tajo Ferrobamba',-14.0522,-72.2137],['Tajo Chalcobamba',-14.0680,-72.2050]].forEach(([n,lat,lng]) =>
+    L.marker([lat,lng],{icon:L.divIcon({html:`<div style="background:#00d4ff;color:#000;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap">${n}</div>`,className:'',iconAnchor:[50,16]})}).addTo(leafMap)
+  );
+}
+function activateTool(t) {
+  document.getElementById('btn-poly').classList.toggle('active', t==='polygon');
+  document.getElementById('btn-circ').classList.toggle('active', t==='circle');
+  if (!leafMap) return;
+  if (t==='polygon') new L.Draw.Polygon(leafMap).enable();
+  if (t==='circle') new L.Draw.Circle(leafMap).enable();
+}
+function clearMap() { if (drawn) drawn.clearLayers(); document.getElementById('map-hint').textContent='Toca Zona y dibuja el área de sobrevuelo en el mapa'; }
+function toggleSat() {
+  const btn = document.getElementById('btn-sat');
+  if (isSat) { leafMap.removeLayer(satL); tileL.addTo(leafMap); btn.classList.remove('active'); btn.textContent='🛰️ Satélite'; }
+  else { leafMap.removeLayer(tileL); satL.addTo(leafMap); btn.classList.add('active'); btn.textContent='🗺️ Mapa'; }
+  isSat = !isSat;
+}
+
+// ── UTILS ──
+function fmtDate(d) {
+  if (!d) return '--';
+  const s = d.toString();
+  const p = s.split('-');
+  return p.length===3 ? `${p[2]}/${p[1]}/${p[0]}` : s;
+}
+function toast(msg, type='info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `toast ${type} show`;
+  clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
