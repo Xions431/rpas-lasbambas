@@ -4,624 +4,760 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>RPAS OPS · Las Bambas</title>
-  <link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#00d4ff">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="RPAS OPS">
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Space+Mono:wght@400;700&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"/>
 <style>
-:root{--bg:#090e1a;--bg2:#0d1526;--bg3:#111d35;--card:#0f1a2e;--border:#1e3356;--accent:#00d4ff;--accent2:#ff6b35;--green:#00ff88;--yellow:#ffd60a;--red:#ff3355;--text:#e8f4ff;--muted:#6b8aad}
+:root{
+  --bg:#090e1a;--bg2:#0d1526;--bg3:#111d35;--card:#0f1a2e;
+  --border:#1e3356;--accent:#00d4ff;--accent2:#ff6b35;
+  --green:#00ff88;--yellow:#ffd60a;--red:#ff3355;
+  --text:#e8f4ff;--muted:#6b8aad;
+}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:'Exo 2',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(0,80,160,.15),transparent 60%),radial-gradient(ellipse at 80% 80%,rgba(0,212,255,.08),transparent 50%);pointer-events:none;z-index:0}
-.header{position:sticky;top:0;z-index:100;background:rgba(9,14,26,.97);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
-.header-brand{display:flex;align-items:center;gap:10px}
-.drone-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--accent),#0088cc);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 20px rgba(0,212,255,.4);animation:pulse 3s infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 15px rgba(0,212,255,.3)}50%{box-shadow:0 0 35px rgba(0,212,255,.8)}}
-.brand-name{font-family:'Rajdhani',sans-serif;font-size:19px;font-weight:700;letter-spacing:2px;color:var(--accent);text-shadow:0 0 15px rgba(0,212,255,.5)}
-.brand-sub{font-size:10px;color:var(--muted);letter-spacing:1px}
-.header-right{display:flex;align-items:center;gap:8px}
-.status-pill{display:flex;align-items:center;gap:5px;background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);border-radius:20px;padding:4px 10px;font-size:11px;color:var(--green);font-family:'Space Mono',monospace}
-.dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.5s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.admin-badge{display:flex;align-items:center;gap:5px;background:rgba(255,107,53,.1);border:1px solid rgba(255,107,53,.4);border-radius:20px;padding:4px 10px;font-size:11px;color:var(--accent2);font-family:'Space Mono',monospace;cursor:pointer}
-.admin-badge.off{background:rgba(107,138,173,.08);border-color:rgba(107,138,173,.2);color:var(--muted)}
-.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:63px;z-index:99}
-.tab{flex:1;padding:11px 4px;text-align:center;font-size:13px;font-weight:600;letter-spacing:.5px;color:var(--muted);cursor:pointer;border:none;background:transparent;transition:all .25s;position:relative;text-transform:uppercase;font-family:'Rajdhani',sans-serif}
-.tab.active{color:var(--accent)}
-.tab.active::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:2px;background:var(--accent);box-shadow:0 0 8px var(--accent);border-radius:2px 2px 0 0}
-.tab-icon{font-size:15px;display:block;margin-bottom:1px}
-.screen{display:none;padding:14px;position:relative;z-index:1;padding-bottom:30px}
-.screen.active{display:block}
-.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px;position:relative;overflow:hidden}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.4}
-.card-title{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.field-group{margin-bottom:13px}
-.field-label{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;display:block}
-.field-input,.field-select{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:15px;font-family:'Exo 2',sans-serif;outline:none;transition:all .2s;-webkit-appearance:none}
-.field-input:focus,.field-select:focus{border-color:var(--accent);background:rgba(0,212,255,.06);box-shadow:0 0 0 3px rgba(0,212,255,.1)}
-.field-select option{background:var(--bg3)}
-.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.btn-primary{width:100%;padding:15px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),#0088cc);color:#000;font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all .2s;box-shadow:0 4px 20px rgba(0,212,255,.35)}
-.btn-primary:disabled{opacity:.5;cursor:not-allowed}
-.btn-secondary{width:100%;padding:12px;border:1px solid var(--accent);border-radius:12px;background:transparent;color:var(--accent);font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s;text-transform:uppercase}
-.btn-danger{padding:10px 14px;border:1px solid var(--red);border-radius:8px;background:transparent;color:var(--red);font-size:13px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:600}
-.btn-success{padding:10px 14px;border:1px solid var(--green);border-radius:8px;background:rgba(0,255,136,.1);color:var(--green);font-size:13px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:600}
-.btn-warn{padding:10px 14px;border:1px solid var(--yellow);border-radius:8px;background:rgba(255,214,10,.08);color:var(--yellow);font-size:13px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:600}
-.rpa-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
-.rpa-option{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;transition:all .2s;text-align:center}
-.rpa-option.selected{border-color:var(--accent);background:rgba(0,212,255,.08)}
-.rpa-option .rpa-name{font-size:13px;font-weight:600;color:var(--text)}
-.rpa-option .rpa-icon{font-size:22px;margin-bottom:4px}
-.msg-preview{background:#0d1f0d;border:1px solid rgba(0,255,136,.2);border-radius:12px;padding:14px;font-family:'Space Mono',monospace;font-size:11px;line-height:1.9;color:#a8ffcc;white-space:pre-wrap;word-break:break-word;margin-top:4px}
-.vuelo-item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;position:relative;overflow:hidden}
-.vuelo-item::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:2px 0 0 2px}
-.vuelo-item.PENDIENTE::before{background:var(--yellow)}
-.vuelo-item.AUTORIZADO::before{background:var(--green)}
-.vuelo-item.RECHAZADO::before{background:var(--red)}
-.vuelo-item.CONCLUIDO::before{background:var(--muted)}
-.vuelo-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
-.vuelo-lugar{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--text);letter-spacing:1px}
-.vuelo-badge{font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 8px;border-radius:20px;text-transform:uppercase;font-family:'Space Mono',monospace}
-.badge-PENDIENTE{background:rgba(255,214,10,.15);color:var(--yellow);border:1px solid rgba(255,214,10,.3)}
-.badge-AUTORIZADO{background:rgba(0,255,136,.15);color:var(--green);border:1px solid rgba(0,255,136,.3)}
-.badge-RECHAZADO{background:rgba(255,51,85,.15);color:var(--red);border:1px solid rgba(255,51,85,.3)}
-.badge-CONCLUIDO{background:rgba(107,138,173,.15);color:var(--muted);border:1px solid rgba(107,138,173,.3)}
-.vuelo-meta{display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px;color:var(--muted)}
-.vuelo-meta span{display:flex;align-items:center;gap:4px}
-.vuelo-meta strong{color:var(--text)}
-.vuelo-footer{display:flex;gap:8px;margin-top:10px;align-items:center}
-.vuelo-piloto{flex:1;font-size:12px;color:var(--muted)}
-.vuelo-piloto strong{color:var(--accent);font-size:13px}
-.admin-lock{background:rgba(255,107,53,.06);border:1px solid rgba(255,107,53,.3);border-radius:16px;padding:24px;margin-bottom:12px;text-align:center}
-.admin-lock-icon{font-size:48px;margin-bottom:12px}
-.admin-lock-title{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;letter-spacing:2px;color:var(--accent2);margin-bottom:8px}
-.admin-lock-sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5}
-.admin-input{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,107,53,.4);border-radius:10px;padding:14px;color:var(--text);font-size:18px;font-family:'Space Mono',monospace;outline:none;text-align:center;letter-spacing:4px;margin-bottom:12px}
-.admin-input:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(255,107,53,.15)}
-.btn-admin{width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent2),#cc4400);color:#fff;font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;letter-spacing:2px;cursor:pointer;text-transform:uppercase;box-shadow:0 4px 20px rgba(255,107,53,.35)}
-.admin-active-bar{background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.3);border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
-.admin-active-info{font-size:13px;color:var(--accent2);font-weight:600;display:flex;align-items:center;gap:6px}
-.btn-logout{padding:7px 14px;border:1px solid rgba(255,107,53,.4);border-radius:8px;background:transparent;color:var(--accent2);font-size:12px;cursor:pointer;font-family:'Exo 2',sans-serif}
-.sync-bar{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:9px 14px;margin-bottom:12px;font-size:12px;color:var(--muted)}
-.sync-btn{padding:5px 12px;border:1px solid var(--accent);border-radius:8px;background:transparent;color:var(--accent);font-size:12px;cursor:pointer;font-family:'Exo 2',sans-serif}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);padding:12px 20px;border-radius:12px;font-weight:700;font-size:14px;z-index:9999;opacity:0;transition:all .3s;white-space:nowrap;pointer-events:none;max-width:90vw;text-align:center}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Exo 2',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(0,80,160,.12),transparent 60%),radial-gradient(ellipse at 80% 80%,rgba(0,212,255,.06),transparent 50%);pointer-events:none;z-index:0}
+
+/* HEADER */
+.hdr{background:rgba(9,14,26,.98);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:100;position:relative}
+.hdr-brand{display:flex;align-items:center;gap:9px}
+.hdr-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),#0077bb);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;animation:glow 3s infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 12px rgba(0,212,255,.3)}50%{box-shadow:0 0 28px rgba(0,212,255,.8)}}
+.hdr-title{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;letter-spacing:2px;color:var(--accent)}
+.hdr-sub{font-size:9px;color:var(--muted);letter-spacing:1px}
+.hdr-right{display:flex;gap:6px;align-items:center}
+.pill{display:flex;align-items:center;gap:4px;border-radius:20px;padding:4px 9px;font-size:10px;font-family:'Space Mono',monospace;cursor:pointer;transition:all .2s}
+.pill-sync{background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.25);color:var(--green)}
+.pill-sync.err{background:rgba(255,51,85,.08);border-color:rgba(255,51,85,.25);color:var(--red)}
+.pill-admin{background:rgba(107,138,173,.08);border:1px solid rgba(107,138,173,.2);color:var(--muted)}
+.pill-admin.on{background:rgba(255,107,53,.1);border-color:rgba(255,107,53,.4);color:var(--accent2)}
+.dot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* TABS */
+.tabs{display:flex;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;z-index:99}
+.tab{flex:1;padding:10px 2px;text-align:center;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:transparent;transition:all .2s;position:relative;text-transform:uppercase;font-family:'Rajdhani',sans-serif;font-size:12px}
+.tab.on{color:var(--accent)}
+.tab.on::after{content:'';position:absolute;bottom:0;left:15%;right:15%;height:2px;background:var(--accent);border-radius:2px 2px 0 0;box-shadow:0 0 6px var(--accent)}
+.tab-i{font-size:14px;display:block;margin-bottom:1px}
+
+/* SCREENS */
+.screens{flex:1;overflow:hidden;position:relative}
+.screen{position:absolute;inset:0;overflow-y:auto;padding:12px;display:none;z-index:1}
+.screen.on{display:block}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.35}
+.ct{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+
+/* FIELDS */
+.fg{margin-bottom:11px}
+.fl{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;display:block}
+.fi,.fs{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-size:14px;font-family:'Exo 2',sans-serif;outline:none;transition:all .2s;-webkit-appearance:none}
+.fi:focus,.fs:focus{border-color:var(--accent);background:rgba(0,212,255,.05);box-shadow:0 0 0 2px rgba(0,212,255,.1)}
+.fs option{background:var(--bg3)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* RPA */
+.rpa-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}
+.rpa-opt{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px;cursor:pointer;text-align:center;transition:all .2s}
+.rpa-opt.on{border-color:var(--accent);background:rgba(0,212,255,.07)}
+.rpa-opt .ri{font-size:20px;margin-bottom:3px}
+.rpa-opt .rn{font-size:12px;font-weight:600;color:var(--text)}
+
+/* BUTTONS */
+.btn-p{width:100%;padding:13px;border:none;border-radius:11px;background:linear-gradient(135deg,var(--accent),#0077bb);color:#000;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;cursor:pointer;text-transform:uppercase;box-shadow:0 3px 15px rgba(0,212,255,.3);transition:all .2s}
+.btn-p:disabled{opacity:.45;cursor:not-allowed}
+.btn-s{width:100%;padding:11px;border:1px solid var(--accent);border-radius:11px;background:transparent;color:var(--accent);font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-transform:uppercase}
+.btn-adm{width:100%;padding:13px;border:none;border-radius:11px;background:linear-gradient(135deg,var(--accent2),#bb3300);color:#fff;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;cursor:pointer;text-transform:uppercase}
+.btn-ok{padding:9px 13px;border:1px solid var(--green);border-radius:8px;background:rgba(0,255,136,.08);color:var(--green);font-size:12px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700}
+.btn-no{padding:9px 13px;border:1px solid var(--red);border-radius:8px;background:transparent;color:var(--red);font-size:12px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700}
+.btn-warn{padding:9px 13px;border:1px solid var(--yellow);border-radius:8px;background:rgba(255,214,10,.07);color:var(--yellow);font-size:12px;cursor:pointer;font-family:'Exo 2',sans-serif;font-weight:700}
+.btn-copy{padding:9px 13px;border:1px solid var(--accent);border-radius:8px;background:transparent;color:var(--accent);font-size:12px;cursor:pointer;font-family:'Exo 2',sans-serif}
+
+/* MSG */
+.msg{background:#0a1a0a;border:1px solid rgba(0,255,136,.2);border-radius:11px;padding:12px;font-family:'Space Mono',monospace;font-size:11px;line-height:1.9;color:#a8ffcc;white-space:pre-wrap;word-break:break-word}
+
+/* VUELO CARDS */
+.vc{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:13px;margin-bottom:9px;position:relative;overflow:hidden}
+.vc::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:2px 0 0 2px}
+.vc.PENDIENTE::before{background:var(--yellow)}
+.vc.AUTORIZADO::before{background:var(--green)}
+.vc.RECHAZADO::before{background:var(--red)}
+.vc.CONCLUIDO::before{background:var(--muted)}
+.vh{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:7px}
+.vl{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;color:var(--text);letter-spacing:.5px}
+.vb{font-size:9px;font-weight:700;letter-spacing:1px;padding:3px 7px;border-radius:20px;text-transform:uppercase;font-family:'Space Mono',monospace}
+.bP{background:rgba(255,214,10,.12);color:var(--yellow);border:1px solid rgba(255,214,10,.3)}
+.bA{background:rgba(0,255,136,.12);color:var(--green);border:1px solid rgba(0,255,136,.3)}
+.bR{background:rgba(255,51,85,.12);color:var(--red);border:1px solid rgba(255,51,85,.3)}
+.bC{background:rgba(107,138,173,.12);color:var(--muted);border:1px solid rgba(107,138,173,.3)}
+.vm{display:grid;grid-template-columns:1fr 1fr;gap:3px;font-size:11px;color:var(--muted)}
+.vm span strong{color:var(--text)}
+.vf{display:flex;gap:5px;margin-top:9px;align-items:center;flex-wrap:wrap}
+.vp{flex:1;font-size:11px;color:var(--muted)}
+.vp strong{color:var(--accent);font-size:12px}
+
+/* MAPA */
+#map-wrap{position:relative}
+#map{width:100%;height:calc(100vh - 185px);border-radius:14px;border:1px solid var(--border);overflow:hidden}
+.map-tb{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.mb{padding:7px 12px;border-radius:9px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--text);font-family:'Exo 2',sans-serif;display:flex;align-items:center;gap:4px;transition:all .2s}
+.mb.on{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.09)}
+.map-info{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:8px 12px;margin-top:8px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:7px}
+.gps-btn{position:absolute;bottom:20px;right:10px;z-index:1000;width:42px;height:42px;background:var(--card);border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,212,255,.3)}
+.gps-btn.tracking{background:rgba(0,212,255,.15);animation:glow 2s infinite}
+
+/* ADMIN */
+.adm-lock{background:rgba(255,107,53,.05);border:1px solid rgba(255,107,53,.25);border-radius:14px;padding:22px;text-align:center;margin-bottom:10px}
+.adm-icon{font-size:44px;margin-bottom:10px}
+.adm-title{font-family:'Rajdhani',sans-serif;font-size:19px;font-weight:700;letter-spacing:2px;color:var(--accent2);margin-bottom:6px}
+.adm-sub{font-size:12px;color:var(--muted);margin-bottom:18px;line-height:1.5}
+.adm-inp{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,107,53,.35);border-radius:9px;padding:13px;color:var(--text);font-size:17px;font-family:'Space Mono',monospace;outline:none;text-align:center;letter-spacing:4px;margin-bottom:10px}
+.adm-inp:focus{border-color:var(--accent2);box-shadow:0 0 0 2px rgba(255,107,53,.12)}
+.adm-bar{background:rgba(255,107,53,.07);border:1px solid rgba(255,107,53,.25);border-radius:9px;padding:9px 13px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.adm-bar-info{font-size:12px;color:var(--accent2);font-weight:700}
+.btn-out{padding:6px 12px;border:1px solid rgba(255,107,53,.35);border-radius:7px;background:transparent;color:var(--accent2);font-size:11px;cursor:pointer;font-family:'Exo 2',sans-serif}
+
+/* SYNC BAR */
+.sbar{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:var(--muted)}
+.sbtn{padding:4px 10px;border:1px solid var(--accent);border-radius:7px;background:transparent;color:var(--accent);font-size:11px;cursor:pointer}
+
+/* STATS */
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:13px;text-align:center}
+.sn{font-family:'Space Mono',monospace;font-size:26px;font-weight:700;line-height:1}
+.sl{font-size:10px;color:var(--muted);margin-top:3px;letter-spacing:1px;text-transform:uppercase}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(16px);padding:11px 18px;border-radius:11px;font-weight:700;font-size:13px;z-index:9999;opacity:0;transition:all .28s;white-space:nowrap;pointer-events:none;max-width:88vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast.success{background:var(--green);color:#000;box-shadow:0 4px 20px rgba(0,255,136,.4)}
-.toast.error{background:var(--red);color:#fff;box-shadow:0 4px 20px rgba(255,51,85,.4)}
-.toast.info{background:var(--accent);color:#000;box-shadow:0 4px 20px rgba(0,212,255,.4)}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;display:none;align-items:flex-end;backdrop-filter:blur(6px)}
-.modal-overlay.open{display:flex}
-.modal{width:100%;background:var(--bg2);border-radius:24px 24px 0 0;border:1px solid var(--border);padding:20px;max-height:85vh;overflow-y:auto;animation:slideUp .3s ease}
-@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;display:block}
-.modal-title{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;letter-spacing:2px;color:var(--accent);margin-bottom:16px;text-transform:uppercase}
-.loading{text-align:center;padding:30px;color:var(--muted)}
-.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.empty-state{text-align:center;padding:40px;color:var(--muted)}
-#map{width:100%;height:calc(100vh - 210px);border-radius:16px;border:1px solid var(--border);overflow:hidden}
-.map-toolbar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
-.map-btn{padding:8px 14px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--text);font-family:'Exo 2',sans-serif;display:flex;align-items:center;gap:5px}
-.map-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.1)}
-.map-info{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-top:10px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}
-::-webkit-scrollbar{width:4px}
+.toast.ok{background:var(--green);color:#000;box-shadow:0 3px 16px rgba(0,255,136,.4)}
+.toast.err{background:var(--red);color:#fff;box-shadow:0 3px 16px rgba(255,51,85,.4)}
+.toast.inf{background:var(--accent);color:#000;box-shadow:0 3px 16px rgba(0,212,255,.4)}
+
+/* MODAL */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;display:none;align-items:flex-end;backdrop-filter:blur(6px)}
+.mo.open{display:flex}
+.md{width:100%;background:var(--bg2);border-radius:22px 22px 0 0;border:1px solid var(--border);padding:18px;max-height:88vh;overflow-y:auto;animation:up .3s ease}
+@keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mh{width:38px;height:3px;background:var(--border);border-radius:2px;margin:0 auto 14px;display:block}
+.mt{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;letter-spacing:2px;color:var(--accent);margin-bottom:14px;text-transform:uppercase}
+
+/* SPINNER */
+.spin-wrap{text-align:center;padding:28px;color:var(--muted)}
+.spin{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 10px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:36px;color:var(--muted)}
+
+/* GPS dot on map */
+.gps-marker{width:16px;height:16px;background:var(--accent);border:3px solid white;border-radius:50%;box-shadow:0 0 0 4px rgba(0,212,255,.3),0 0 12px rgba(0,212,255,.6)}
+.gps-acc{border-radius:50%;background:rgba(0,212,255,.12);border:1px solid rgba(0,212,255,.3)}
+
+::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="header-brand">
-    <div class="drone-icon">🚁</div>
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-brand">
+    <div class="hdr-icon">🚁</div>
     <div>
-      <div class="brand-name">RPAS OPS</div>
-      <div class="brand-sub">LAS BAMBAS · MINERA</div>
+      <div class="hdr-title">RPAS OPS</div>
+      <div class="hdr-sub">LAS BAMBAS · MINERA</div>
     </div>
   </div>
-  <div class="header-right">
-    <div class="status-pill" id="conn-status"><div class="dot"></div>SYNC</div>
-    <div class="admin-badge off" id="admin-badge-hdr" onclick="goAdmin()">🔒 ADMIN</div>
+  <div class="hdr-right">
+    <div class="pill pill-sync" id="pill-conn"><div class="dot"></div><span id="conn-txt">SYNC</span></div>
+    <div class="pill pill-admin" id="pill-adm" onclick="goTab('admin')">🔒 ADMIN</div>
   </div>
 </div>
 
+<!-- TABS -->
 <div class="tabs">
-  <button class="tab active" onclick="switchTab('registro',this)"><span class="tab-icon">📋</span>Registro</button>
-  <button class="tab" onclick="switchTab('vuelos',this)"><span class="tab-icon">📡</span>Vuelos</button>
-  <button class="tab" onclick="switchTab('mapa',this)"><span class="tab-icon">🗺️</span>Mapa</button>
-  <button class="tab" onclick="switchTab('admin',this)"><span class="tab-icon">🔐</span>Admin</button>
+  <button class="tab on" onclick="goTab('reg',this)"><span class="tab-i">📋</span>Registro</button>
+  <button class="tab" onclick="goTab('vuelos',this)"><span class="tab-i">📡</span>Vuelos</button>
+  <button class="tab" onclick="goTab('mapa',this)"><span class="tab-i">🗺️</span>Mapa</button>
+  <button class="tab" onclick="goTab('admin',this)"><span class="tab-i">🔐</span>Admin</button>
 </div>
 
-<!-- ══ REGISTRO ══ -->
-<div class="screen active" id="screen-registro">
-  <div class="card">
-    <div class="card-title">📍 Ubicación del Vuelo</div>
-    <div class="field-group">
-      <label class="field-label">Lugar / Tajo</label>
-      <select class="field-select" id="lugar" onchange="lugarChange();updatePreview()">
-        <option value="">— Seleccionar —</option>
-        <option>TAJO FERROBAMBA</option>
-        <option>TAJO CHALCOBAMBA</option>
-        <option>TAJO SULFOBAMBA</option>
-        <option>BOTADERO NORTE</option>
-        <option>BOTADERO SUR</option>
-        <option>PLANTA CONCENTRADORA</option>
-        <option>RELAVERA</option>
-        <option value="OTRO">Otro...</option>
-      </select>
-    </div>
-    <div class="field-group" id="otro-wrap" style="display:none">
-      <label class="field-label">Especificar Lugar</label>
-      <input class="field-input" id="lugar-otro" placeholder="Escribir ubicación..." oninput="updatePreview()">
-    </div>
-  </div>
+<!-- SCREENS -->
+<div class="screens">
 
-  <div class="card">
-    <div class="card-title">📅 Fecha y Hora</div>
-    <div class="field-group">
-      <label class="field-label">Fecha</label>
-      <input type="date" class="field-input" id="fecha" oninput="updatePreview()">
-    </div>
-    <div class="field-row">
-      <div class="field-group">
-        <label class="field-label">Hora Inicio</label>
-        <input type="time" class="field-input" id="hora-inicio" oninput="updatePreview()">
+  <!-- ══ REGISTRO ══ -->
+  <div class="screen on" id="s-reg">
+
+    <div class="card">
+      <div class="ct">📍 Ubicación</div>
+      <div class="fg">
+        <label class="fl">Lugar / Tajo</label>
+        <select class="fs" id="lugar" onchange="lugarChg();mkMsg()">
+          <option value="">— Seleccionar —</option>
+          <option>TAJO FERROBAMBA</option>
+          <option>TAJO CHALCOBAMBA</option>
+          <option>TAJO SULFOBAMBA</option>
+          <option>BOTADERO NORTE</option>
+          <option>BOTADERO SUR</option>
+          <option>PLANTA CONCENTRADORA</option>
+          <option>RELAVERA</option>
+          <option value="OTRO">Otro...</option>
+        </select>
       </div>
-      <div class="field-group">
-        <label class="field-label">Hora Fin</label>
-        <input type="time" class="field-input" id="hora-fin" oninput="updatePreview()">
+      <div class="fg" id="otro-w" style="display:none">
+        <label class="fl">Especificar</label>
+        <input class="fi" id="lugar-o" placeholder="Escribir lugar..." oninput="mkMsg()">
       </div>
     </div>
-    <div class="field-group">
-      <label class="field-label">Altura de Vuelo (m)</label>
-      <input type="number" class="field-input" id="altura" placeholder="Ej: 250" oninput="updatePreview()">
+
+    <div class="card">
+      <div class="ct">📅 Fecha y Hora</div>
+      <div class="fg">
+        <label class="fl">Fecha</label>
+        <input type="date" class="fi" id="fecha" oninput="mkMsg()">
+      </div>
+      <div class="fr">
+        <div class="fg"><label class="fl">Hora Inicio</label><input type="time" class="fi" id="hi" oninput="mkMsg()"></div>
+        <div class="fg"><label class="fl">Hora Fin</label><input type="time" class="fi" id="hf" oninput="mkMsg()"></div>
+      </div>
+      <div class="fg">
+        <label class="fl">Altura de Vuelo (m)</label>
+        <input type="number" class="fi" id="alt" placeholder="Ej: 250" oninput="mkMsg()">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct">🚁 Aeronave RPA</div>
+      <div class="rpa-grid">
+        <div class="rpa-opt on" onclick="selRPA(this,'Matrice M300 RTK')"><div class="ri">🔵</div><div class="rn">M300 RTK</div></div>
+        <div class="rpa-opt" onclick="selRPA(this,'Mavic 3E')"><div class="ri">🟢</div><div class="rn">Mavic 3E</div></div>
+        <div class="rpa-opt" onclick="selRPA(this,'Phantom 4 RTK')"><div class="ri">⚪</div><div class="rn">Phantom 4</div></div>
+        <div class="rpa-opt" onclick="selRPA(this,'Otro')"><div class="ri">➕</div><div class="rn">Otro</div></div>
+      </div>
+      <div class="fg"><label class="fl">Número de Serie</label><input class="fi" id="serie" placeholder="Ej: 1ZNBL2800C00JM/..." oninput="mkMsg()"></div>
+      <div class="fg">
+        <label class="fl">Tipo de Misión</label>
+        <select class="fs" id="mision" onchange="mkMsg()">
+          <option>fotogrametría</option><option>inspección</option>
+          <option>topografía</option><option>supervisión</option><option>seguridad</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct">👨‍✈️ Piloto(s)</div>
+      <div class="fg"><label class="fl">Piloto Principal</label><input class="fi" id="p1" placeholder="Nombre completo" oninput="mkMsg()"></div>
+      <div class="fg"><label class="fl">DNI Piloto Principal</label><input type="number" class="fi" id="d1" placeholder="Número de DNI" oninput="mkMsg()"></div>
+      <div class="fg"><label class="fl">Co-Piloto (opcional)</label><input class="fi" id="p2" placeholder="Nombre completo" oninput="mkMsg()"></div>
+      <div class="fg"><label class="fl">DNI Co-Piloto</label><input type="number" class="fi" id="d2" placeholder="Número de DNI" oninput="mkMsg()"></div>
+      <div class="fg">
+        <label class="fl">Gerencia</label>
+        <select class="fs" id="ger" onchange="mkMsg()">
+          <option>SS-TT</option><option>PI</option><option>OPERACIONES</option>
+          <option>MINA</option><option>MEDIO AMBIENTE</option><option>SEGURIDAD</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct">💬 Vista Previa Mensaje</div>
+      <div class="msg" id="msg-pre" style="color:var(--muted)">// Complete los campos para generar el mensaje...</div>
+      <div style="display:flex;gap:7px;margin-top:10px">
+        <button class="btn-s" onclick="copyMsg()" style="flex:1">📋 Copiar</button>
+        <button class="btn-p" id="btn-reg" onclick="submit()" style="flex:2">✈️ REGISTRAR</button>
+      </div>
+    </div>
+
+    <div style="height:20px"></div>
+  </div>
+
+  <!-- ══ VUELOS ══ -->
+  <div class="screen" id="s-vuelos">
+    <div class="sbar">
+      <span id="sync-lbl">Cargando...</span>
+      <button class="sbtn" onclick="loadVuelos()">🔄 Actualizar</button>
+    </div>
+    <div id="vuelos-list"><div class="spin-wrap"><div class="spin"></div>Conectando con Google Sheets...</div></div>
+    <div style="height:20px"></div>
+  </div>
+
+  <!-- ══ MAPA ══ -->
+  <div class="screen" id="s-mapa">
+    <div class="map-tb">
+      <button class="mb on" id="mb-poly" onclick="mTool('poly')">✏️ Zona</button>
+      <button class="mb" id="mb-circ" onclick="mTool('circ')">⭕ Círculo</button>
+      <button class="mb" onclick="clearMap()">🗑️ Limpiar</button>
+      <button class="mb" id="mb-sat" onclick="togSat()">🛰️ Satélite</button>
+      <button class="mb" id="mb-gps" onclick="startGPS()">📍 Mi GPS</button>
+    </div>
+    <div id="map-wrap">
+      <div id="map"></div>
+      <div class="gps-btn" id="gps-fab" onclick="centerGPS()" title="Centrar en mi ubicación">📍</div>
+    </div>
+    <div class="map-info"><span>💡</span><span id="map-hint">Activa <strong>Mi GPS</strong> para verte en el mapa, luego dibuja la zona de sobrevuelo</span></div>
+    <div style="height:20px"></div>
+  </div>
+
+  <!-- ══ ADMIN ══ -->
+  <div class="screen" id="s-admin">
+    <div id="adm-lock">
+      <div class="adm-lock">
+        <div class="adm-icon">🔐</div>
+        <div class="adm-title">PANEL ADMINISTRADOR</div>
+        <div class="adm-sub">Solo el administrador puede autorizar,<br>rechazar o eliminar vuelos registrados.</div>
+        <input type="password" class="adm-inp" id="adm-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')admLogin()">
+        <button class="btn-adm" onclick="admLogin()">🔓 INGRESAR AL PANEL</button>
+      </div>
+    </div>
+
+    <div id="adm-open" style="display:none">
+      <div class="adm-bar">
+        <div class="adm-bar-info">🟠 MODO ADMINISTRADOR ACTIVO</div>
+        <button class="btn-out" onclick="admOut()">🔒 Salir</button>
+      </div>
+      <div class="sbar">
+        <span id="adm-lbl">Cargando...</span>
+        <button class="sbtn" onclick="loadVuelos(true)">🔄 Actualizar</button>
+      </div>
+      <div id="adm-list"><div class="spin-wrap"><div class="spin"></div>Cargando...</div></div>
+      <div class="card" style="border-color:rgba(255,51,85,.2);margin-top:8px">
+        <div class="ct" style="color:var(--red)">⚠️ Zona Peligro</div>
+        <button class="btn-no" style="width:100%;padding:12px" onclick="delAll()">🗑️ Borrar TODOS los registros</button>
+      </div>
+      <div style="height:20px"></div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-title">🚁 Aeronave RPA</div>
-    <div class="rpa-grid">
-      <div class="rpa-option selected" onclick="selectRPA(this,'Matrice M300 RTK')"><div class="rpa-icon">🔵</div><div class="rpa-name">M300 RTK</div></div>
-      <div class="rpa-option" onclick="selectRPA(this,'Mavic 3E')"><div class="rpa-icon">🟢</div><div class="rpa-name">Mavic 3E</div></div>
-      <div class="rpa-option" onclick="selectRPA(this,'Phantom 4 RTK')"><div class="rpa-icon">⚪</div><div class="rpa-name">Phantom 4 RTK</div></div>
-      <div class="rpa-option" onclick="selectRPA(this,'Otro')"><div class="rpa-icon">➕</div><div class="rpa-name">Otro</div></div>
-    </div>
-    <div class="field-group">
-      <label class="field-label">Número de Serie</label>
-      <input class="field-input" id="serie" placeholder="Ej: 1ZNBL2800C00JM/..." oninput="updatePreview()">
-    </div>
-    <div class="field-group">
-      <label class="field-label">Tipo de Misión</label>
-      <select class="field-select" id="mision" onchange="updatePreview()">
-        <option>fotogrametría</option>
-        <option>inspección</option>
-        <option>topografía</option>
-        <option>supervisión</option>
-        <option>seguridad</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">👨‍✈️ Piloto(s)</div>
-    <div class="field-group">
-      <label class="field-label">Piloto Principal</label>
-      <input class="field-input" id="piloto1" placeholder="Nombre completo" oninput="updatePreview()">
-    </div>
-    <div class="field-group">
-      <label class="field-label">DNI Piloto Principal</label>
-      <input type="number" class="field-input" id="dni1" placeholder="Número de DNI" oninput="updatePreview()">
-    </div>
-    <div class="field-group">
-      <label class="field-label">Co-Piloto (opcional)</label>
-      <input class="field-input" id="piloto2" placeholder="Nombre completo" oninput="updatePreview()">
-    </div>
-    <div class="field-group">
-      <label class="field-label">DNI Co-Piloto</label>
-      <input type="number" class="field-input" id="dni2" placeholder="Número de DNI" oninput="updatePreview()">
-    </div>
-    <div class="field-group">
-      <label class="field-label">Gerencia</label>
-      <select class="field-select" id="gerencia" onchange="updatePreview()">
-        <option>SS-TT</option><option>PI</option><option>OPERACIONES</option>
-        <option>MINA</option><option>MEDIO AMBIENTE</option><option>SEGURIDAD</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">💬 Vista Previa del Mensaje</div>
-    <div class="msg-preview" id="msg-preview" style="color:var(--muted)">// Complete los campos para generar el mensaje...</div>
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <button class="btn-secondary" onclick="copyMsg()" style="flex:1">📋 Copiar</button>
-      <button class="btn-primary" id="btn-reg" onclick="submitVuelo()" style="flex:2">✈️ REGISTRAR</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ VUELOS ══ -->
-<div class="screen" id="screen-vuelos">
-  <div class="sync-bar">
-    <span id="sync-label">Cargando...</span>
-    <button class="sync-btn" onclick="loadVuelos()">🔄 Actualizar</button>
-  </div>
-  <div id="vuelos-list">
-    <div class="loading"><div class="spinner"></div>Conectando con Google Sheets...</div>
-  </div>
-</div>
-
-<!-- ══ MAPA ══ -->
-<div class="screen" id="screen-mapa">
-  <div class="map-toolbar">
-    <button class="map-btn active" id="btn-poly" onclick="activateTool('polygon')">✏️ Zona</button>
-    <button class="map-btn" id="btn-circ" onclick="activateTool('circle')">⭕ Círculo</button>
-    <button class="map-btn" onclick="clearMap()">🗑️ Limpiar</button>
-    <button class="map-btn" id="btn-sat" onclick="toggleSat()">🛰️ Satélite</button>
-  </div>
-  <div id="map"></div>
-  <div class="map-info"><span>💡</span><span id="map-hint">Toca <strong>Zona</strong> y dibuja el área de sobrevuelo en el mapa</span></div>
-</div>
-
-<!-- ══ ADMIN ══ -->
-<div class="screen" id="screen-admin">
-  <div id="admin-locked">
-    <div class="admin-lock">
-      <div class="admin-lock-icon">🔐</div>
-      <div class="admin-lock-title">PANEL ADMINISTRADOR</div>
-      <div class="admin-lock-sub">Solo el administrador autoriza, rechaza o elimina vuelos.<br>El personal solo puede registrar vuelos.</div>
-      <input type="password" class="admin-input" id="admin-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()">
-      <button class="btn-admin" onclick="adminLogin()">🔓 INGRESAR AL PANEL</button>
-    </div>
-  </div>
-
-  <div id="admin-unlocked" style="display:none">
-    <div class="admin-active-bar">
-      <div class="admin-active-info">🟠 MODO ADMINISTRADOR ACTIVO</div>
-      <button class="btn-logout" onclick="adminLogout()">🔒 Salir</button>
-    </div>
-    <div class="sync-bar">
-      <span id="admin-sync-label">Cargando vuelos...</span>
-      <button class="sync-btn" onclick="loadVuelos(true)">🔄 Actualizar</button>
-    </div>
-    <div id="admin-list">
-      <div class="loading"><div class="spinner"></div>Cargando...</div>
-    </div>
-    <div class="card" style="border-color:rgba(255,51,85,.25);margin-top:8px">
-      <div class="card-title" style="color:var(--red)">⚠️ Zona Peligro</div>
-      <button class="btn-danger" style="width:100%;padding:13px" onclick="clearAllAdmin()">🗑️ Borrar TODOS los registros del Sheet</button>
-    </div>
-  </div>
-</div>
+</div><!-- /screens -->
 
 <div class="toast" id="toast"></div>
 
-<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
-  <div class="modal">
-    <span class="modal-handle"></span>
-    <div class="modal-title" id="modal-title"></div>
-    <div id="modal-body"></div>
+<div class="mo" id="modal" onclick="closeModal(event)">
+  <div class="md">
+    <span class="mh"></span>
+    <div class="mt" id="m-title"></div>
+    <div id="m-body"></div>
   </div>
 </div>
 
 <script>
+// ══════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════
 const API = 'https://script.google.com/macros/s/AKfycbwLR-vsmrYSqKSiKauKVRZpd_x1zI_WDgcOIiRo5u39DhXT_isWeCuzZ9lyvnrIEYeO/exec';
 
-let vuelos = [], selectedRPA = 'Matrice M300 RTK', isAdmin = false;
-let leafMap, drawn, isSat = false, tileL, satL;
+// ══ STATE ══
+let vuelos=[], rpa='Matrice M300 RTK', isAdm=false;
+let leafMap, drawn, isSat=false, tileL, satL;
+let gpsWatch=null, gpsMarker=null, gpsCircle=null, gpsPos=null;
+let drawnGeo=null;
 
-// ── INIT ──
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
-  updatePreview();
+// ══ INIT ══
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('fecha').value=new Date().toISOString().split('T')[0];
+  mkMsg();
+  testConn();
   loadVuelos();
-  setInterval(loadVuelos, 30000);
+  setInterval(loadVuelos,30000);
 });
 
-// ── API ──
-async function apiGet() {
-  try {
-    const r = await fetch(API + '?t=' + Date.now());
-    return await r.json();
-  } catch(e) { return {ok:false, error:e.toString()}; }
-}
-async function apiPost(body) {
-  try {
-    const r = await fetch(API, { method:'POST', body: JSON.stringify(body) });
-    return await r.json();
-  } catch(e) { return {ok:false, error:e.toString()}; }
+// ══ TEST CONNECTION ══
+async function testConn(){
+  try{
+    const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'TEST'})});
+    const d=await r.json();
+    setConn(d.ok);
+  }catch(e){setConn(false);}
 }
 
-// ── LOAD ──
-async function loadVuelos(fromAdmin) {
-  const d = await apiGet();
-  if (d.ok) {
-    vuelos = (d.vuelos || []).sort((a,b) => (b.TIMESTAMP||'').localeCompare(a.TIMESTAMP||''));
-    const t = new Date().toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'});
-    document.getElementById('sync-label').textContent = `Sync ${t} · ${vuelos.length} vuelos`;
-    setConn(true); renderVuelos();
-    if (isAdmin || fromAdmin) renderAdminList();
-  } else {
+function setConn(ok){
+  const p=document.getElementById('pill-conn');
+  const t=document.getElementById('conn-txt');
+  if(ok){p.className='pill pill-sync';t.textContent='ONLINE';}
+  else{p.className='pill pill-sync err';t.textContent='OFFLINE';}
+}
+
+// ══ API ══
+async function apiGet(){
+  try{
+    const r=await fetch(API+'?t='+Date.now());
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return await r.json();
+  }catch(e){return{ok:false,error:e.toString()};}
+}
+async function apiPost(body){
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return await r.json();
+  }catch(e){return{ok:false,error:e.toString()};}
+}
+
+// ══ LOAD VUELOS ══
+async function loadVuelos(adm){
+  const d=await apiGet();
+  if(d.ok){
+    vuelos=(d.vuelos||[]).sort((a,b)=>(b.TIMESTAMP||'').localeCompare(a.TIMESTAMP||''));
+    const t=new Date().toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('sync-lbl').textContent=`Sync ${t} · ${vuelos.length} vuelos`;
+    setConn(true);
+    renderVuelos();
+    if(isAdm||adm) renderAdm();
+  }else{
     setConn(false);
-    document.getElementById('sync-label').textContent = '⚠️ Sin conexión con Google Sheets';
+    document.getElementById('sync-lbl').textContent='⚠️ Sin conexión — '+( d.error||'');
   }
 }
 
-function setConn(ok) {
-  const el = document.getElementById('conn-status');
-  el.style.color = ok ? 'var(--green)' : 'var(--red)';
-  el.style.borderColor = ok ? 'rgba(0,255,136,.3)' : 'rgba(255,51,85,.3)';
+// ══ TABS ══
+function goTab(tab,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('s-'+tab).classList.add('on');
+  if(btn) btn.classList.add('on');
+  else{
+    const idx={reg:0,vuelos:1,mapa:2,admin:3}[tab];
+    if(idx!==undefined) document.querySelectorAll('.tab')[idx].classList.add('on');
+  }
+  if(tab==='mapa'&&!leafMap) initMap();
+  if(tab==='vuelos') loadVuelos();
+  if(tab==='admin'&&isAdm) renderAdm();
 }
 
-// ── TABS ──
-function switchTab(tab, btn) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('screen-' + tab).classList.add('active');
-  btn.classList.add('active');
-  if (tab === 'mapa' && !leafMap) initMap();
-  if (tab === 'vuelos') loadVuelos();
-  if (tab === 'admin' && isAdmin) renderAdminList();
+// ══ FORM ══
+function lugarChg(){
+  document.getElementById('otro-w').style.display=
+    document.getElementById('lugar').value==='OTRO'?'block':'none';
 }
-function goAdmin() {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab')[3].classList.add('active');
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-admin').classList.add('active');
+function selRPA(el,name){
+  document.querySelectorAll('.rpa-opt').forEach(o=>o.classList.remove('on'));
+  el.classList.add('on'); rpa=name; mkMsg();
+}
+function getLugar(){
+  const v=document.getElementById('lugar').value;
+  return v==='OTRO'?document.getElementById('lugar-o').value.toUpperCase():v;
 }
 
-// ── FORM ──
-function lugarChange() {
-  document.getElementById('otro-wrap').style.display =
-    document.getElementById('lugar').value === 'OTRO' ? 'block' : 'none';
-}
-function selectRPA(el, name) {
-  document.querySelectorAll('.rpa-option').forEach(o => o.classList.remove('selected'));
-  el.classList.add('selected'); selectedRPA = name; updatePreview();
-}
-function getLugar() {
-  const v = document.getElementById('lugar').value;
-  return v === 'OTRO' ? document.getElementById('lugar-otro').value.toUpperCase() : v;
-}
-
-// ── MESSAGE ──
-function buildMessage() {
-  const lugar = getLugar();
-  const fecha = document.getElementById('fecha').value;
-  if (!lugar || !fecha) return null;
-  const [y,m,d] = fecha.split('-');
-  const hi = document.getElementById('hora-inicio').value;
-  const hf = document.getElementById('hora-fin').value;
-  const alt = document.getElementById('altura').value;
-  const serie = document.getElementById('serie').value;
-  const p1 = document.getElementById('piloto1').value;
-  const d1 = document.getElementById('dni1').value;
-  const p2 = document.getElementById('piloto2').value;
-  const d2 = document.getElementById('dni2').value;
-  const ger = document.getElementById('gerencia').value;
-  const mis = document.getElementById('mision').value;
-  let msg = `BUENOS DÍAS\nINFORMO PLAN DE VUELO.\nLUGAR: ${lugar}\nFecha: ${d}/${m}/${y}\n`;
-  if (hi||hf) msg += `Hora:  ${hi||'--:--'} AM @ ${hf||'--:--'} AM\n`;
-  if (alt) msg += `Altura de vuelo: ${alt} m\n`;
-  msg += `RPA: ${selectedRPA}`;
-  if (serie) msg += ` serie: ${serie}`;
-  msg += `\n${mis}.\n`;
-  if (p1) msg += p2 ? `Piloto: ${p1}/${p2}\nDNI: ${d1||'---'}/${d2||'---'}\n` : `Piloto: ${p1}\n${d1?'DNI: '+d1+'\n':''}`;
-  msg += `Empresa: MINERA LAS BAMBAS.\nGerencia- ${ger}.`;
+// ══ BUILD MESSAGE ══
+function buildMsg(){
+  const lugar=getLugar();
+  const fecha=document.getElementById('fecha').value;
+  if(!lugar||!fecha) return null;
+  const [y,m,d]=fecha.split('-');
+  const hi=document.getElementById('hi').value;
+  const hf=document.getElementById('hf').value;
+  const alt=document.getElementById('alt').value;
+  const serie=document.getElementById('serie').value;
+  const p1=document.getElementById('p1').value;
+  const d1=document.getElementById('d1').value;
+  const p2=document.getElementById('p2').value;
+  const d2=document.getElementById('d2').value;
+  const ger=document.getElementById('ger').value;
+  const mis=document.getElementById('mision').value;
+  let msg=`BUENOS DÍAS\nINFORMO PLAN DE VUELO.\nLUGAR: ${lugar}\nFecha: ${d}/${m}/${y}\n`;
+  if(hi||hf) msg+=`Hora:  ${hi||'--:--'} AM @ ${hf||'--:--'} AM\n`;
+  if(alt) msg+=`Altura de vuelo: ${alt} m\n`;
+  msg+=`RPA: ${rpa}`;
+  if(serie) msg+=` Serie: ${serie}`;
+  msg+=`\n${mis}.\n`;
+  if(p1) msg+=p2?`Piloto: ${p1}/${p2}\nDNI: ${d1||'---'}/${d2||'---'}\n`:`Piloto: ${p1}\n${d1?'DNI: '+d1+'\n':''}`;
+  msg+=`Empresa: MINERA LAS BAMBAS.\nGerencia- ${ger}.`;
   return msg;
 }
-function updatePreview() {
-  const msg = buildMessage();
-  const el = document.getElementById('msg-preview');
-  el.textContent = msg || '// Complete los campos para generar el mensaje...';
-  el.style.color = msg ? '#a8ffcc' : 'var(--muted)';
+function mkMsg(){
+  const msg=buildMsg();
+  const el=document.getElementById('msg-pre');
+  el.textContent=msg||'// Complete los campos para generar el mensaje...';
+  el.style.color=msg?'#a8ffcc':'var(--muted)';
 }
-function copyMsg() {
-  const msg = buildMessage();
-  if (!msg) { toast('⚠️ Complete los campos', 'error'); return; }
-  navigator.clipboard.writeText(msg).then(() => toast('✅ Copiado al portapapeles!', 'success')).catch(() => toast('✅ Copiado!', 'success'));
-}
-
-// ── SUBMIT ──
-async function submitVuelo() {
-  const lugar = getLugar();
-  if (!lugar) { toast('⚠️ Selecciona el lugar', 'error'); return; }
-  if (!document.getElementById('piloto1').value.trim()) { toast('⚠️ Ingresa el nombre del piloto', 'error'); return; }
-  const btn = document.getElementById('btn-reg');
-  btn.disabled = true; btn.textContent = '⏳ ENVIANDO...';
-  const r = await apiPost({ action:'ADD', vuelo:{
-    lugar, fecha: document.getElementById('fecha').value,
-    horaInicio: document.getElementById('hora-inicio').value,
-    horaFin: document.getElementById('hora-fin').value,
-    altura: document.getElementById('altura').value,
-    rpa: selectedRPA, serie: document.getElementById('serie').value,
-    mision: document.getElementById('mision').value,
-    piloto1: document.getElementById('piloto1').value,
-    dni1: document.getElementById('dni1').value,
-    piloto2: document.getElementById('piloto2').value,
-    dni2: document.getElementById('dni2').value,
-    gerencia: document.getElementById('gerencia').value,
-    mensaje: buildMessage()
-  }});
-  btn.disabled = false; btn.textContent = '✈️ REGISTRAR';
-  if (r.ok) { toast('✅ Vuelo registrado en Google Sheets!', 'success'); loadVuelos(); }
-  else toast('❌ Error: ' + (r.error || 'Sin conexión'), 'error');
+function copyMsg(){
+  const msg=buildMsg();
+  if(!msg){toast('⚠️ Complete los campos','err');return;}
+  navigator.clipboard.writeText(msg).then(()=>toast('✅ Copiado!','ok')).catch(()=>toast('✅ Copiado!','ok'));
 }
 
-// ── RENDER VUELOS (personal) ──
-function renderVuelos() {
-  const el = document.getElementById('vuelos-list');
-  if (!vuelos.length) {
-    el.innerHTML = `<div class="empty-state"><div style="font-size:42px">📡</div><div style="font-size:14px;margin-top:10px">No hay vuelos registrados</div><div style="font-size:12px;margin-top:6px;color:var(--muted)">Ve a Registro para agregar el primero</div></div>`;
+// ══ SUBMIT ══
+async function submit(){
+  const lugar=getLugar();
+  if(!lugar){toast('⚠️ Selecciona el lugar','err');return;}
+  if(!document.getElementById('p1').value.trim()){toast('⚠️ Ingresa el piloto','err');return;}
+  const btn=document.getElementById('btn-reg');
+  btn.disabled=true;btn.textContent='⏳ ENVIANDO...';
+  const vuelo={
+    lugar, fecha:document.getElementById('fecha').value,
+    horaInicio:document.getElementById('hi').value,
+    horaFin:document.getElementById('hf').value,
+    altura:document.getElementById('alt').value,
+    rpa, serie:document.getElementById('serie').value,
+    mision:document.getElementById('mision').value,
+    piloto1:document.getElementById('p1').value,
+    dni1:document.getElementById('d1').value,
+    piloto2:document.getElementById('p2').value,
+    dni2:document.getElementById('d2').value,
+    gerencia:document.getElementById('ger').value,
+    mensaje:buildMsg(),
+    lat:gpsPos?gpsPos.lat:'',
+    lng:gpsPos?gpsPos.lng:'',
+    zonaGeo:drawnGeo?JSON.stringify(drawnGeo):''
+  };
+  const r=await apiPost({action:'ADD',vuelo});
+  btn.disabled=false;btn.textContent='✈️ REGISTRAR';
+  if(r.ok){
+    toast('✅ Vuelo guardado en Google Sheets!','ok');
+    loadVuelos();
+  }else{
+    toast('❌ Error: '+(r.error||'Sin conexión'),'err');
+    console.error('API error:',r);
+  }
+}
+
+// ══ RENDER VUELOS ══
+function renderVuelos(){
+  const el=document.getElementById('vuelos-list');
+  if(!vuelos.length){
+    el.innerHTML=`<div class="empty"><div style="font-size:40px">📡</div><div style="font-size:13px;margin-top:9px">Sin vuelos registrados</div><div style="font-size:11px;margin-top:5px">Ve a Registro para agregar</div></div>`;
     return;
   }
-  el.innerHTML = vuelos.map(v => `
-    <div class="vuelo-item ${v.ESTADO||'PENDIENTE'}" onclick="openModal('${v.ID}')">
-      <div class="vuelo-header">
-        <div class="vuelo-lugar">${v.LUGAR||''}</div>
-        <div class="vuelo-badge badge-${v.ESTADO||'PENDIENTE'}">${v.ESTADO||'PENDIENTE'}</div>
+  el.innerHTML=vuelos.map(v=>`
+    <div class="vc ${v.ESTADO||'PENDIENTE'}" onclick="openModal('${v.ID}')">
+      <div class="vh">
+        <div class="vl">${v.LUGAR||''}</div>
+        <div class="vb b${(v.ESTADO||'PENDIENTE')[0]}">${v.ESTADO||'PENDIENTE'}</div>
       </div>
-      <div class="vuelo-meta">
-        <span>📅 <strong>${fmtDate(v.FECHA)}</strong></span>
-        <span>⏰ <strong>${v.HORA_INICIO||'--'} → ${v.HORA_FIN||'--'}</strong></span>
+      <div class="vm">
+        <span>📅 <strong>${fmtD(v.FECHA)}</strong></span>
+        <span>⏰ <strong>${v.HORA_INICIO||'--'}→${v.HORA_FIN||'--'}</strong></span>
         <span>📏 <strong>${v.ALTURA?v.ALTURA+'m':'--'}</strong></span>
         <span>🚁 <strong>${(v.RPA||'').split(' ').slice(0,2).join(' ')}</strong></span>
       </div>
-      <div class="vuelo-footer">
-        <div class="vuelo-piloto">✈️ <strong>${v.PILOTO1||''}${v.PILOTO2?'/'+v.PILOTO2:''}</strong></div>
-        <div style="font-size:11px;color:var(--muted)">${v.GERENCIA||''}</div>
+      <div class="vf">
+        <div class="vp">✈️ <strong>${v.PILOTO1||''}${v.PILOTO2?'/'+v.PILOTO2:''}</strong></div>
+        <div style="font-size:10px;color:var(--muted)">${v.GERENCIA||''}</div>
       </div>
     </div>`).join('');
 }
 
-// ── RENDER ADMIN LIST ──
-function renderAdminList() {
-  const el = document.getElementById('admin-list');
-  document.getElementById('admin-sync-label').textContent = `${vuelos.length} vuelos en total`;
-  if (!vuelos.length) {
-    el.innerHTML = `<div class="empty-state"><div style="font-size:42px">📋</div><div style="font-size:14px;margin-top:10px">Sin vuelos registrados</div></div>`;
-    return;
-  }
-  el.innerHTML = vuelos.map(v => `
-    <div class="vuelo-item ${v.ESTADO||'PENDIENTE'}">
-      <div class="vuelo-header">
-        <div class="vuelo-lugar">${v.LUGAR||''}</div>
-        <div class="vuelo-badge badge-${v.ESTADO||'PENDIENTE'}">${v.ESTADO||'PENDIENTE'}</div>
+// ══ ADMIN ══
+function admLogin(){
+  const p=document.getElementById('adm-pass').value;
+  if(!p){toast('⚠️ Ingresa la contraseña','err');return;}
+  sessionStorage.setItem('ap',p);
+  isAdm=true;
+  document.getElementById('adm-lock').style.display='none';
+  document.getElementById('adm-open').style.display='block';
+  document.getElementById('pill-adm').className='pill pill-admin on';
+  document.getElementById('pill-adm').textContent='🟠 ADMIN';
+  toast('✅ Panel admin activo','ok');
+  loadVuelos(true);
+}
+function admOut(){
+  isAdm=false;sessionStorage.removeItem('ap');
+  document.getElementById('adm-lock').style.display='block';
+  document.getElementById('adm-open').style.display='none';
+  document.getElementById('adm-pass').value='';
+  document.getElementById('pill-adm').className='pill pill-admin';
+  document.getElementById('pill-adm').textContent='🔒 ADMIN';
+  toast('Sesión cerrada','inf');
+}
+function renderAdm(){
+  const el=document.getElementById('adm-list');
+  document.getElementById('adm-lbl').textContent=`${vuelos.length} vuelos en Google Sheets`;
+  if(!vuelos.length){el.innerHTML=`<div class="empty"><div style="font-size:38px">📋</div><div style="margin-top:9px">Sin vuelos</div></div>`;return;}
+  el.innerHTML=vuelos.map(v=>`
+    <div class="vc ${v.ESTADO||'PENDIENTE'}">
+      <div class="vh">
+        <div class="vl">${v.LUGAR||''}</div>
+        <div class="vb b${(v.ESTADO||'PENDIENTE')[0]}">${v.ESTADO||'PENDIENTE'}</div>
       </div>
-      <div class="vuelo-meta">
-        <span>📅 <strong>${fmtDate(v.FECHA)}</strong></span>
-        <span>⏰ <strong>${v.HORA_INICIO||'--'} → ${v.HORA_FIN||'--'}</strong></span>
-        <span>🚁 <strong>${(v.RPA||'').split(' ').slice(0,2).join(' ')}</strong></span>
+      <div class="vm">
+        <span>📅 <strong>${fmtD(v.FECHA)}</strong></span>
         <span>👤 <strong>${v.PILOTO1||''}</strong></span>
+        <span>🚁 <strong>${(v.RPA||'').split(' ')[0]}</strong></span>
+        <span>🏢 <strong>${v.GERENCIA||''}</strong></span>
       </div>
-      <div style="font-size:12px;color:var(--muted);margin-top:6px">DNI: <span style="color:var(--text)">${v.DNI1||'--'}</span> · ${v.GERENCIA||''}</div>
-      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+      <div style="font-size:11px;color:var(--muted);margin-top:5px">DNI: <span style="color:var(--text)">${v.DNI1||'--'}</span></div>
+      <div style="display:flex;gap:5px;margin-top:9px;flex-wrap:wrap">
         ${v.ESTADO==='PENDIENTE'?`
-          <button class="btn-success" onclick="adminAction('AUTORIZAR','${v.ID}')">✓ Autorizar</button>
-          <button class="btn-danger" onclick="adminAction('RECHAZAR','${v.ID}')">✗ Rechazar</button>
+          <button class="btn-ok" onclick="admAct('AUTORIZAR','${v.ID}')">✓ Autorizar</button>
+          <button class="btn-no" onclick="admAct('RECHAZAR','${v.ID}')">✗ Rechazar</button>
         `:''}
-        ${v.ESTADO==='AUTORIZADO'?`<button class="btn-warn" onclick="adminAction('CONCLUIR','${v.ID}')">☑ Concluir</button>`:''}
-        <button class="btn-secondary" style="padding:8px 12px;font-size:12px;width:auto" onclick="copyVueloMsg('${v.ID}')">📋 Copiar</button>
-        <button class="btn-danger" onclick="adminAction('DELETE','${v.ID}')" style="margin-left:auto">🗑️ Eliminar</button>
+        ${v.ESTADO==='AUTORIZADO'?`<button class="btn-warn" onclick="admAct('CONCLUIR','${v.ID}')">☑ Concluir</button>`:''}
+        <button class="btn-copy" onclick="copyVMsg('${v.ID}')">📋</button>
+        <button class="btn-no" onclick="admAct('DELETE','${v.ID}')" style="margin-left:auto">🗑️</button>
       </div>
     </div>`).join('');
 }
-
-// ── ADMIN LOGIN / LOGOUT ──
-function adminLogin() {
-  const pass = document.getElementById('admin-pass').value;
-  if (!pass) { toast('⚠️ Ingresa la contraseña', 'error'); return; }
-  sessionStorage.setItem('ap', pass);
-  isAdmin = true;
-  document.getElementById('admin-locked').style.display = 'none';
-  document.getElementById('admin-unlocked').style.display = 'block';
-  document.getElementById('admin-badge-hdr').className = 'admin-badge';
-  document.getElementById('admin-badge-hdr').innerHTML = '🟠 ADMIN';
-  toast('✅ Acceso de administrador activo', 'success');
-  renderAdminList();
-}
-function adminLogout() {
-  isAdmin = false; sessionStorage.removeItem('ap');
-  document.getElementById('admin-locked').style.display = 'block';
-  document.getElementById('admin-unlocked').style.display = 'none';
-  document.getElementById('admin-pass').value = '';
-  document.getElementById('admin-badge-hdr').className = 'admin-badge off';
-  document.getElementById('admin-badge-hdr').innerHTML = '🔒 ADMIN';
-  toast('Sesión cerrada', 'info');
-}
-
-// ── ADMIN ACTIONS ──
-async function adminAction(action, id) {
-  const pass = sessionStorage.getItem('ap');
-  if (!pass) { toast('⚠️ Sesión expirada', 'error'); adminLogout(); return; }
-  const labels = {AUTORIZAR:'⏳ Autorizando...',RECHAZAR:'⏳ Rechazando...',CONCLUIR:'⏳ Concluyendo...',DELETE:'⏳ Eliminando...'};
-  toast(labels[action]||'⏳ Procesando...', 'info');
-  const r = await apiPost({ action, id, password: pass });
-  if (r.ok) {
-    const ok = {AUTORIZAR:'✅ VUELO AUTORIZADO',RECHAZAR:'❌ Vuelo rechazado',CONCLUIR:'☑ Vuelo concluido',DELETE:'🗑️ Vuelo eliminado'};
-    toast(ok[action]||'✅ Hecho', 'success');
+async function admAct(action,id){
+  const p=sessionStorage.getItem('ap');
+  if(!p){toast('⚠️ Sesión expirada','err');admOut();return;}
+  const labels={AUTORIZAR:'⏳ Autorizando...',RECHAZAR:'⏳ Rechazando...',CONCLUIR:'⏳ Concluyendo...',DELETE:'⏳ Eliminando...'};
+  toast(labels[action]||'⏳...','inf');
+  const r=await apiPost({action,id,password:p});
+  if(r.ok){
+    const msgs={AUTORIZAR:'✅ VUELO AUTORIZADO',RECHAZAR:'❌ Vuelo rechazado',CONCLUIR:'☑ Vuelo concluido',DELETE:'🗑️ Eliminado'};
+    toast(msgs[action],'ok');
     await loadVuelos(true);
-  } else {
-    if (r.error === 'Contraseña incorrecta') { toast('❌ Contraseña incorrecta — sesión cerrada', 'error'); adminLogout(); }
-    else toast('❌ Error: ' + (r.error||'Sin conexión'), 'error');
+  }else{
+    if(r.error==='Contraseña incorrecta'){toast('❌ Contraseña incorrecta','err');admOut();}
+    else toast('❌ '+(r.error||'Error'),'err');
   }
 }
-async function clearAllAdmin() {
-  if (!confirm('¿BORRAR TODOS los vuelos del Google Sheet?\n\nEsta acción NO se puede deshacer.')) return;
-  const pass = sessionStorage.getItem('ap');
-  toast('⏳ Borrando todos los registros...', 'info');
-  for (const v of [...vuelos]) await apiPost({action:'DELETE', id:v.ID, password:pass});
-  toast('🗑️ Todos los registros borrados', 'success');
+async function delAll(){
+  if(!confirm('¿BORRAR TODOS los vuelos del Google Sheet?\nEsto NO se puede deshacer.')) return;
+  const p=sessionStorage.getItem('ap');
+  toast('⏳ Borrando todos...','inf');
+  for(const v of [...vuelos]) await apiPost({action:'DELETE',id:v.ID,password:p});
+  toast('🗑️ Todos borrados','ok');
   await loadVuelos(true);
 }
 
-// ── MODAL ──
-function openModal(id) {
-  const v = vuelos.find(x => x.ID === id);
-  if (!v) return;
-  document.getElementById('modal-title').textContent = v.LUGAR||'';
-  document.getElementById('modal-body').innerHTML = `
-    <div class="msg-preview" style="margin-bottom:14px">${v.MENSAJE||'Sin mensaje registrado'}</div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <button class="btn-secondary" style="flex:1" onclick="copyVueloMsg('${id}')">📋 Copiar Mensaje</button>
-      <div class="vuelo-badge badge-${v.ESTADO||'PENDIENTE'}" style="padding:10px 14px">${v.ESTADO||'PENDIENTE'}</div>
+// ══ MODAL ══
+function openModal(id){
+  const v=vuelos.find(x=>x.ID===id);if(!v)return;
+  document.getElementById('m-title').textContent=v.LUGAR||'';
+  document.getElementById('m-body').innerHTML=`
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px">
+      Estado: <span class="vb b${(v.ESTADO||'P')[0]}" style="font-size:11px">${v.ESTADO||'PENDIENTE'}</span>
+      &nbsp;·&nbsp; ${fmtD(v.FECHA)} ${v.HORA_INICIO||''}
+      ${v.LAT?`<br>📍 GPS: ${parseFloat(v.LAT).toFixed(5)}, ${parseFloat(v.LNG).toFixed(5)}`:''}
+    </div>
+    <div class="msg" style="margin-bottom:12px">${v.MENSAJE||'Sin mensaje'}</div>
+    <div style="display:flex;gap:7px">
+      <button class="btn-s" style="flex:1" onclick="copyVMsg('${id}')">📋 Copiar</button>
+      ${v.LAT?`<button class="btn-copy" onclick="verEnMapa('${id}')">🗺️ Ver</button>`:''}
     </div>`;
-  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('modal').classList.add('open');
 }
-function copyVueloMsg(id) {
-  const v = vuelos.find(x => x.ID === id);
-  if (v?.MENSAJE) { navigator.clipboard.writeText(v.MENSAJE).catch(()=>{}); toast('✅ Mensaje copiado!', 'success'); closeModal(); }
+function copyVMsg(id){
+  const v=vuelos.find(x=>x.ID===id);
+  if(v?.MENSAJE){navigator.clipboard.writeText(v.MENSAJE).catch(()=>{});toast('✅ Copiado!','ok');closeModal();}
 }
-function closeModal(e) {
-  if (!e || e.target === document.getElementById('modal-overlay'))
-    document.getElementById('modal-overlay').classList.remove('open');
+function verEnMapa(id){
+  const v=vuelos.find(x=>x.ID===id);
+  if(!v||!v.LAT) return;
+  closeModal();goTab('mapa');
+  setTimeout(()=>{
+    if(!leafMap) initMap();
+    leafMap.setView([parseFloat(v.LAT),parseFloat(v.LNG)],16);
+    L.popup().setLatLng([parseFloat(v.LAT),parseFloat(v.LNG)]).setContent(`<b>${v.LUGAR}</b><br>${v.PILOTO1}`).openOn(leafMap);
+  },400);
+}
+function closeModal(e){
+  if(!e||e.target===document.getElementById('modal'))
+    document.getElementById('modal').classList.remove('open');
 }
 
-// ── MAP ──
-function initMap() {
-  leafMap = L.map('map', { center:[-14.0522,-72.2137], zoom:14 });
-  tileL = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19}).addTo(leafMap);
-  satL = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {maxZoom:19});
-  drawn = new L.FeatureGroup().addTo(leafMap);
-  const dc = new L.Control.Draw({
-    draw:{ polygon:{shapeOptions:{color:'#00d4ff',fillColor:'#00d4ff',fillOpacity:.25,weight:2}}, circle:{shapeOptions:{color:'#ff6b35',fillColor:'#ff6b35',fillOpacity:.2,weight:2}}, rectangle:false, marker:false, polyline:false, circlemarker:false },
-    edit:{ featureGroup:drawn }
+// ══ MAP ══
+function initMap(){
+  const center=[-14.0522,-72.2137];
+  leafMap=L.map('map',{center,zoom:14,zoomControl:true});
+  tileL=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OSM'}).addTo(leafMap);
+  satL=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19});
+  drawn=new L.FeatureGroup().addTo(leafMap);
+  const dc=new L.Control.Draw({
+    draw:{
+      polygon:{shapeOptions:{color:'#00d4ff',fillColor:'#00d4ff',fillOpacity:.2,weight:2}},
+      circle:{shapeOptions:{color:'#ff6b35',fillColor:'#ff6b35',fillOpacity:.15,weight:2}},
+      rectangle:{shapeOptions:{color:'#ffd60a',fillColor:'#ffd60a',fillOpacity:.15,weight:2}},
+      marker:false,polyline:false,circlemarker:false
+    },
+    edit:{featureGroup:drawn}
   });
   leafMap.addControl(dc);
-  leafMap.on(L.Draw.Event.CREATED, e => { drawn.addLayer(e.layer); document.getElementById('map-hint').innerHTML='✅ Zona de sobrevuelo marcada en el mapa'; });
-  [['Tajo Ferrobamba',-14.0522,-72.2137],['Tajo Chalcobamba',-14.0680,-72.2050]].forEach(([n,lat,lng]) =>
-    L.marker([lat,lng],{icon:L.divIcon({html:`<div style="background:#00d4ff;color:#000;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;white-space:nowrap">${n}</div>`,className:'',iconAnchor:[50,16]})}).addTo(leafMap)
-  );
-}
-function activateTool(t) {
-  document.getElementById('btn-poly').classList.toggle('active', t==='polygon');
-  document.getElementById('btn-circ').classList.toggle('active', t==='circle');
-  if (!leafMap) return;
-  if (t==='polygon') new L.Draw.Polygon(leafMap).enable();
-  if (t==='circle') new L.Draw.Circle(leafMap).enable();
-}
-function clearMap() { if (drawn) drawn.clearLayers(); document.getElementById('map-hint').textContent='Toca Zona y dibuja el área de sobrevuelo en el mapa'; }
-function toggleSat() {
-  const btn = document.getElementById('btn-sat');
-  if (isSat) { leafMap.removeLayer(satL); tileL.addTo(leafMap); btn.classList.remove('active'); btn.textContent='🛰️ Satélite'; }
-  else { leafMap.removeLayer(tileL); satL.addTo(leafMap); btn.classList.add('active'); btn.textContent='🗺️ Mapa'; }
-  isSat = !isSat;
+  leafMap.on(L.Draw.Event.CREATED,e=>{
+    drawn.addLayer(e.layer);
+    drawnGeo=e.layer.toGeoJSON();
+    document.getElementById('map-hint').innerHTML='✅ Zona marcada — se guardará con el registro del vuelo';
+  });
+
+  // Marcadores tajos
+  [['Tajo Ferrobamba',-14.0522,-72.2137,'🔵'],['Tajo Chalcobamba',-14.0680,-72.2050,'🟢']].forEach(([n,lat,lng,ico])=>{
+    L.marker([lat,lng],{icon:L.divIcon({
+      html:`<div style="background:rgba(9,14,26,.9);color:#00d4ff;padding:4px 8px;border-radius:8px;font-size:11px;font-weight:700;border:1px solid #1e3356;white-space:nowrap">${ico} ${n}</div>`,
+      className:'',iconAnchor:[55,16]
+    })}).addTo(leafMap);
+  });
 }
 
-// ── UTILS ──
-function fmtDate(d) {
-  if (!d) return '--';
-  const s = d.toString();
-  const p = s.split('-');
-  return p.length===3 ? `${p[2]}/${p[1]}/${p[0]}` : s;
+function mTool(t){
+  document.getElementById('mb-poly').classList.toggle('on',t==='poly');
+  document.getElementById('mb-circ').classList.toggle('on',t==='circ');
+  if(!leafMap) return;
+  if(t==='poly') new L.Draw.Polygon(leafMap).enable();
+  if(t==='circ') new L.Draw.Circle(leafMap).enable();
 }
-function toast(msg, type='info') {
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.className = `toast ${type} show`;
-  clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('show'), 2800);
+function clearMap(){
+  if(drawn) drawn.clearLayers();
+  drawnGeo=null;
+  document.getElementById('map-hint').textContent='Activa Mi GPS para verte en el mapa, luego dibuja la zona de sobrevuelo';
+}
+function togSat(){
+  const btn=document.getElementById('mb-sat');
+  if(isSat){leafMap.removeLayer(satL);tileL.addTo(leafMap);btn.classList.remove('on');btn.textContent='🛰️ Satélite';}
+  else{leafMap.removeLayer(tileL);satL.addTo(leafMap);btn.classList.add('on');btn.textContent='🗺️ Mapa';}
+  isSat=!isSat;
+}
+
+// ══ GPS TIEMPO REAL ══
+function startGPS(){
+  if(!leafMap) initMap();
+  if(!navigator.geolocation){toast('❌ GPS no disponible en este dispositivo','err');return;}
+  const btn=document.getElementById('mb-gps');
+  if(gpsWatch){
+    navigator.geolocation.clearWatch(gpsWatch);
+    gpsWatch=null;
+    if(gpsMarker){leafMap.removeLayer(gpsMarker);gpsMarker=null;}
+    if(gpsCircle){leafMap.removeLayer(gpsCircle);gpsCircle=null;}
+    btn.classList.remove('on');btn.textContent='📍 Mi GPS';
+    document.getElementById('gps-fab').style.background='var(--card)';
+    toast('GPS desactivado','inf');
+    return;
+  }
+  toast('⏳ Obteniendo GPS...','inf');
+  btn.classList.add('on');btn.textContent='📍 GPS ON';
+  document.getElementById('gps-fab').style.background='rgba(0,212,255,.2)';
+  gpsWatch=navigator.geolocation.watchPosition(
+    pos=>{
+      const {latitude:lat,longitude:lng,accuracy:acc}=pos.coords;
+      gpsPos={lat,lng,acc};
+      if(gpsCircle) leafMap.removeLayer(gpsCircle);
+      if(gpsMarker) leafMap.removeLayer(gpsMarker);
+      gpsCircle=L.circle([lat,lng],{radius:acc,className:'gps-acc',interactive:false}).addTo(leafMap);
+      gpsMarker=L.marker([lat,lng],{icon:L.divIcon({html:'<div class="gps-marker"></div>',className:'',iconSize:[16,16],iconAnchor:[8,8]})}).addTo(leafMap);
+      gpsMarker.bindPopup(`📍 Tu posición<br>Precisión: ±${Math.round(acc)}m`);
+      document.getElementById('map-hint').innerHTML=`📍 GPS activo · Precisión: <strong>±${Math.round(acc)}m</strong> · <a style="color:var(--accent);cursor:pointer" onclick="centerGPS()">Centrar</a>`;
+    },
+    err=>{
+      toast('❌ Error GPS: '+err.message,'err');
+      btn.classList.remove('on');btn.textContent='📍 Mi GPS';
+    },
+    {enableHighAccuracy:true,maximumAge:5000,timeout:15000}
+  );
+}
+function centerGPS(){
+  if(gpsPos&&leafMap) leafMap.setView([gpsPos.lat,gpsPos.lng],17);
+  else toast('⚠️ Activa GPS primero','err');
+}
+
+// ══ UTILS ══
+function fmtD(d){
+  if(!d) return '--';
+  const s=d.toString();const p=s.split('-');
+  return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:s;
+}
+function toast(msg,type='inf'){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className=`toast ${type} show`;
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2800);
 }
 </script>
 </body>
