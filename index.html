@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -10,426 +10,260 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="RPAS OPS">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
+/* ════════════════════════════════════════
+   TOKENS — LIGHT / DARK
+════════════════════════════════════════ */
 :root{
   --R:#C8102E; --R2:#E8112E; --Rd:#9E0B24; --Rlight:rgba(200,16,46,.08);
-  --W:#FFFFFF; --BG:#F4F5F7; --BG2:#ECEEF2; --S:#1A1D23;
+  --W:#FFFFFF; --BG:#F4F5F7; --BG2:#ECEEF2;
   --G1:#1A1D23; --G2:#3A3F4B; --G3:#6B7280; --G4:#9CA3AF; --G5:#D1D5DB; --G6:#F3F4F6;
   --GRN:#00875A; --YLW:#F59E0B; --BLU:#2563EB; --ORG:#EA580C;
   --SH1:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
   --SH2:0 4px 16px rgba(0,0,0,.1),0 2px 6px rgba(0,0,0,.06);
-  --SH3:0 10px 40px rgba(0,0,0,.12),0 4px 12px rgba(0,0,0,.08);
+  --SH3:0 10px 40px rgba(0,0,0,.15),0 4px 12px rgba(0,0,0,.1);
   --RAD:12px; --RAD2:8px;
   --HDR:60px; --TABS:52px;
   --FONT:'DM Sans',sans-serif; --MONO:'DM Mono',monospace;
-  --SAT: env(safe-area-inset-top, 0px);
-  --SAB: env(safe-area-inset-bottom, 0px);
+  --SAT:env(safe-area-inset-top,0px); --SAB:env(safe-area-inset-bottom,0px);
+  --TR:all .22s ease;
+}
+[data-theme="dark"]{
+  --W:#1E2129; --BG:#13151A; --BG2:#252831;
+  --G1:#F1F3F6; --G2:#CDD0D8; --G3:#8B919E; --G4:#5A6170; --G5:#2E323C; --G6:#252831;
+  --SH1:0 1px 3px rgba(0,0,0,.3),0 1px 2px rgba(0,0,0,.2);
+  --SH2:0 4px 16px rgba(0,0,0,.4),0 2px 6px rgba(0,0,0,.3);
+  --SH3:0 10px 40px rgba(0,0,0,.5),0 4px 12px rgba(0,0,0,.3);
+  --Rlight:rgba(200,16,46,.15);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overflow:hidden;font-family:var(--FONT)}
+html,body{height:100%;overflow:hidden;font-family:var(--FONT);transition:background .25s,color .25s}
 body{background:var(--BG);color:var(--G1);display:flex;flex-direction:column}
 
-/* ━━━ HEADER ━━━ */
+/* ── HEADER ── */
 .hdr{
-  height:calc(var(--HDR) + var(--SAT));
-  padding-top:var(--SAT);
-  background:var(--W);
-  border-bottom:1px solid var(--G5);
+  height:calc(var(--HDR) + var(--SAT));padding-top:var(--SAT);
+  background:var(--W);border-bottom:1px solid var(--G5);
   display:flex;align-items:center;justify-content:space-between;
-  padding-left:16px;padding-right:16px;
-  flex-shrink:0;z-index:300;
-  box-shadow:var(--SH1);
-  position:relative;
+  padding-left:14px;padding-right:12px;flex-shrink:0;z-index:300;
+  box-shadow:var(--SH1);position:relative;transition:var(--TR);
 }
-.hdr::after{
-  content:'';position:absolute;bottom:-2px;left:0;width:100%;height:2px;
-  background:linear-gradient(90deg,var(--R),var(--R2),var(--R));
-}
-.brand{display:flex;align-items:center;gap:12px}
-.brand-mark{
-  display:flex;align-items:center;gap:0;
-  background:var(--R);border-radius:6px;
-  overflow:hidden;
-}
-.brand-mmg{
-  background:var(--R);color:var(--W);
-  font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;
-  padding:7px 9px;line-height:1;
-}
-.brand-sep{width:1px;background:rgba(255,255,255,.25);height:28px;margin:0 0 0 0}
-.brand-lb{
-  background:var(--W);color:var(--R);
-  font-family:'DM Sans',sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;
-  text-transform:uppercase;padding:7px 9px;line-height:1.4;
-}
+.hdr::after{content:'';position:absolute;bottom:-2px;left:0;width:100%;height:2px;
+  background:linear-gradient(90deg,var(--R),var(--R2),var(--R));}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{display:flex;align-items:center;background:var(--R);border-radius:6px;overflow:hidden}
+.brand-mmg{background:var(--R);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;padding:7px 9px;line-height:1}
+.brand-sep{width:1px;background:rgba(255,255,255,.25);height:28px}
+.brand-lb{background:var(--W);color:var(--R);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:7px 9px;line-height:1.4;transition:var(--TR)}
 .brand-lb span{display:block;color:var(--G4);font-size:8px;letter-spacing:1px}
-.app-name{
-  font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--G1);
-  line-height:1;
-}
+.app-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--G1);line-height:1;transition:color .25s}
 .app-name em{color:var(--R);font-style:normal}
 .app-sub{font-size:9px;color:var(--G4);font-weight:500;letter-spacing:1.5px;text-transform:uppercase;margin-top:1px}
-.hdr-actions{display:flex;align-items:center;gap:6px}
-.pill{
-  display:inline-flex;align-items:center;gap:5px;
-  padding:5px 11px;border-radius:20px;
+.hdr-actions{display:flex;align-items:center;gap:5px}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;
   font-family:var(--MONO);font-size:10px;font-weight:500;letter-spacing:.3px;
-  border:1.5px solid;cursor:pointer;transition:all .2s;
-  white-space:nowrap;
-}
+  border:1.5px solid;cursor:pointer;transition:var(--TR);white-space:nowrap}
 .pill-on{border-color:rgba(0,135,90,.3);background:rgba(0,135,90,.07);color:var(--GRN)}
 .pill-off{border-color:rgba(200,16,46,.3);background:rgba(200,16,46,.07);color:var(--R)}
 .pill-warn{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.07);color:var(--YLW)}
 .dot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* ── DARK MODE BUTTON ── */
+.btn-theme{
+  width:34px;height:34px;border-radius:50%;border:1.5px solid var(--G5);
+  background:var(--W);color:var(--G3);font-size:15px;
+  cursor:pointer;transition:var(--TR);display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.btn-theme:hover{border-color:var(--R);color:var(--R);background:var(--Rlight)}
+[data-theme="dark"] .btn-theme{background:var(--G6);border-color:var(--G5);color:var(--G3)}
+
 .btn-lock{
-  display:flex;align-items:center;gap:5px;
-  padding:5px 11px;border-radius:20px;border:1.5px solid var(--G5);
-  background:var(--W);color:var(--G3);font-family:var(--FONT);font-size:10px;font-weight:600;
-  cursor:pointer;transition:all .2s;letter-spacing:.3px;
+  display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:20px;
+  border:1.5px solid var(--G5);background:var(--W);color:var(--G3);
+  font-family:var(--FONT);font-size:10px;font-weight:600;
+  cursor:pointer;transition:var(--TR);letter-spacing:.3px;
 }
 .btn-lock.on{border-color:rgba(200,16,46,.3);background:rgba(200,16,46,.05);color:var(--R)}
 
-/* ━━━ TABS ━━━ */
-.tabs{
-  height:var(--TABS);background:var(--W);
-  border-bottom:1px solid var(--G5);
-  display:flex;flex-shrink:0;z-index:200;
-  box-shadow:0 1px 0 var(--G5);
-}
-/* ━━━ SCREENS ━━━ */
+/* ── TABS ── */
+.tabs{height:var(--TABS);background:var(--W);border-bottom:1px solid var(--G5);
+  display:flex;flex-shrink:0;z-index:200;transition:var(--TR)}
 .screens{flex:1;overflow:hidden;position:relative}
 .screen{position:absolute;inset:0;overflow-y:auto;padding:14px 13px calc(36px + var(--SAB));display:none}
 .screen.on{display:block}
-.tab{
-  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-  font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+#s-mapa{padding:0!important;overflow:hidden}
+#s-mapa.on{display:flex!important;flex-direction:column}
+#s-dash{padding:12px 13px calc(36px + var(--SAB))}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
   color:var(--G4);cursor:pointer;border:none;background:transparent;
-  transition:all .2s;position:relative;font-family:var(--FONT);
-}
+  transition:var(--TR);position:relative;font-family:var(--FONT)}
 .tab.on{color:var(--R)}
-.tab.on::after{
-  content:'';position:absolute;bottom:0;left:20%;right:20%;
-  height:2px;background:var(--R);border-radius:2px 2px 0 0;
-}
-.tab svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-.tab-badge{
-  position:absolute;top:6px;right:calc(50% - 20px);
-  min-width:15px;height:15px;background:var(--R);border-radius:8px;
-  font-size:8px;display:flex;align-items:center;justify-content:center;
-  color:#fff;padding:0 4px;font-family:var(--MONO);font-weight:500;
-}
+.tab.on::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:2px;background:var(--R);border-radius:2px 2px 0 0}
+.tab svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.tab-badge{position:absolute;top:5px;right:calc(50% - 19px);min-width:14px;height:14px;
+  background:var(--R);border-radius:7px;font-size:8px;display:flex;align-items:center;
+  justify-content:center;color:#fff;padding:0 3px;font-family:var(--MONO);font-weight:500}
 
-
-/* ━━━ SECTION LABELS ━━━ */
-.sec{
-  display:flex;align-items:center;gap:8px;
-  font-size:10px;font-weight:700;letter-spacing:2px;
-  text-transform:uppercase;color:var(--G3);
-  margin-bottom:10px;margin-top:4px;
-}
+/* ── SECTION ── */
+.sec{display:flex;align-items:center;gap:8px;font-size:10px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;color:var(--G3);margin-bottom:10px;margin-top:4px}
 .sec-line{flex:1;height:1px;background:var(--G5)}
 
-/* ━━━ ALERT ━━━ */
-.alert{
-  padding:11px 13px;margin-bottom:12px;font-size:12px;
-  display:flex;align-items:flex-start;gap:9px;line-height:1.6;
-  border-radius:var(--RAD2);border:1px solid;
-}
+/* ── ALERTS ── */
+.alert{padding:11px 13px;margin-bottom:12px;font-size:12px;display:flex;align-items:flex-start;gap:9px;line-height:1.6;border-radius:var(--RAD2);border:1px solid}
 .ai{background:#EFF6FF;border-color:#BFDBFE;color:#1E40AF}
 .aw{background:#FFFBEB;border-color:#FDE68A;color:#92400E}
 .ao{background:#ECFDF5;border-color:#A7F3D0;color:#065F46}
 .ar{background:#FEF2F2;border-color:#FECACA;color:#991B1B}
+[data-theme="dark"] .ai{background:#1E3A5F;border-color:#2563EB;color:#93C5FD}
+[data-theme="dark"] .aw{background:#3D2D00;border-color:#D97706;color:#FCD34D}
+[data-theme="dark"] .ao{background:#064E3B;border-color:#10B981;color:#6EE7B7}
+[data-theme="dark"] .ar{background:#4C0519;border-color:#DC2626;color:#FCA5A5}
 
-/* ━━━ CARD ━━━ */
-.card{
-  background:var(--W);border:1px solid var(--G5);
-  border-radius:var(--RAD);padding:16px;margin-bottom:12px;
-  box-shadow:var(--SH1);position:relative;overflow:hidden;
-}
+/* ── CARD ── */
+.card{background:var(--W);border:1px solid var(--G5);border-radius:var(--RAD);
+  padding:16px;margin-bottom:12px;box-shadow:var(--SH1);position:relative;overflow:hidden;transition:var(--TR)}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--R)}
 .card-neutral::before{background:var(--G5)}
 .card-green::before{background:var(--GRN)}
-.card-ttl{
-  font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
-  color:var(--G3);margin-bottom:14px;display:flex;align-items:center;gap:7px;
-}
-.card-ttl-icon{
-  width:28px;height:28px;border-radius:7px;background:var(--Rlight);
-  display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;
-}
+.card-blue::before{background:var(--BLU)}
+.card-ttl{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--G3);margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.card-ttl-icon{width:28px;height:28px;border-radius:7px;background:var(--Rlight);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
 
-/* ━━━ FORM ━━━ */
-.fg{margin-bottom:13px}
-.fg:last-child{margin-bottom:0}
-.fl{
-  font-size:11px;font-weight:600;letter-spacing:.5px;
-  color:var(--G3);margin-bottom:6px;display:flex;align-items:center;gap:4px;
-}
+/* ── FORM ── */
+.fg{margin-bottom:13px}.fg:last-child{margin-bottom:0}
+.fl{font-size:11px;font-weight:600;letter-spacing:.5px;color:var(--G3);margin-bottom:6px;display:flex;align-items:center;gap:4px}
 .req{color:var(--R);font-size:13px;line-height:1}
-.fi,.fs{
-  width:100%;background:var(--BG);border:1.5px solid var(--G5);
-  border-radius:var(--RAD2);padding:11px 13px;
-  color:var(--G1);font-size:14px;font-family:var(--FONT);
-  outline:none;transition:all .2s;-webkit-appearance:none;
-  font-weight:500;
-}
+.fi,.fs{width:100%;background:var(--BG);border:1.5px solid var(--G5);border-radius:var(--RAD2);
+  padding:11px 13px;color:var(--G1);font-size:14px;font-family:var(--FONT);
+  outline:none;transition:var(--TR);-webkit-appearance:none;font-weight:500}
 .fi:focus,.fs:focus{border-color:var(--R);background:var(--W);box-shadow:0 0 0 3px var(--Rlight)}
 .fs option{background:var(--W);font-family:var(--FONT)}
 .fr2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-/* ━━━ TIME PICKER ━━━ */
+/* ── TIME ── */
 .time-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.time-box{
-  background:var(--BG);border:1.5px solid var(--G5);border-radius:var(--RAD2);
-  overflow:hidden;transition:border-color .2s;
-}
+.time-box{background:var(--BG);border:1.5px solid var(--G5);border-radius:var(--RAD2);overflow:hidden;transition:var(--TR)}
 .time-box:focus-within{border-color:var(--R);background:var(--W);box-shadow:0 0 0 3px var(--Rlight)}
-.time-label-top{
-  font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
-  color:var(--G4);padding:8px 12px 0;
-}
-.time-input{
-  width:100%;background:transparent;border:none;outline:none;
-  font-size:20px;font-family:var(--MONO);font-weight:500;color:var(--G1);
-  padding:2px 12px 10px;-webkit-appearance:none;
-}
-.time-input::-webkit-calendar-picker-indicator{
-  filter:invert(.3);cursor:pointer;width:18px;height:18px;
-}
+.time-label-top{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--G4);padding:8px 12px 0}
+.time-input{width:100%;background:transparent;border:none;outline:none;font-size:20px;font-family:var(--MONO);font-weight:500;color:var(--G1);padding:2px 12px 10px;-webkit-appearance:none}
+.time-input::-webkit-calendar-picker-indicator{filter:invert(.3);cursor:pointer;width:18px;height:18px}
+[data-theme="dark"] .time-input::-webkit-calendar-picker-indicator{filter:invert(.7)}
 
-/* ━━━ DRONE SELECTOR ━━━ */
+/* ── DRONE ── */
 .drone-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:4px}
-.drone-card{
-  border:1.5px solid var(--G5);border-radius:var(--RAD2);padding:10px 11px;
-  cursor:pointer;transition:all .2s;background:var(--BG);
-  display:flex;align-items:center;gap:8px;
-}
+.drone-card{border:1.5px solid var(--G5);border-radius:var(--RAD2);padding:10px 11px;cursor:pointer;transition:var(--TR);background:var(--BG);display:flex;align-items:center;gap:8px}
 .drone-card.on{border-color:var(--R);background:var(--Rlight)}
 .drone-card:hover:not(.on){border-color:var(--G3);background:var(--G6)}
 .drone-ico{font-size:18px;flex-shrink:0}
-.drone-info .dn{font-size:12px;font-weight:700;color:var(--G1);line-height:1.2}
+.drone-info .dn{font-size:12px;font-weight:700;color:var(--G1);line-height:1.2;transition:color .22s}
 .drone-info .dm{font-size:10px;color:var(--G3);margin-top:1px}
-.drone-card.on .dn{color:var(--R)}
-.drone-card.on .dm{color:var(--Rd)}
+.drone-card.on .dn{color:var(--R)}.drone-card.on .dm{color:var(--Rd)}
 
-/* ━━━ CHECKLIST ━━━ */
-.cl-item{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:11px 0;border-bottom:1px solid var(--G6);
-}
+/* ── CHECKLIST ── */
+.cl-item{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--G6)}
 .cl-item:last-child{border-bottom:none}
 .cl-lbl{font-size:13px;color:var(--G1);font-weight:500;flex:1;line-height:1.3}
 .cl-sub{font-size:11px;color:var(--G4);margin-top:2px}
-.tog{
-  width:46px;height:26px;border-radius:13px;background:var(--G5);
-  position:relative;cursor:pointer;transition:background .25s;
-  flex-shrink:0;border:none;margin-left:12px;
-}
+.tog{width:46px;height:26px;border-radius:13px;background:var(--G5);position:relative;cursor:pointer;transition:background .25s;flex-shrink:0;border:none;margin-left:12px}
 .tog.on{background:var(--GRN)}
-.tog::after{
-  content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;
-  border-radius:50%;background:var(--W);transition:transform .25s;
-  box-shadow:0 1px 4px rgba(0,0,0,.2);
-}
+.tog::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .25s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
 .tog.on::after{transform:translateX(20px)}
 
-/* ━━━ STATUS BADGES ━━━ */
-.sc{
-  font-family:var(--MONO);font-size:9px;font-weight:500;
-  padding:3px 9px;border-radius:20px;letter-spacing:.3px;white-space:nowrap;
-}
+/* ── STATUS BADGES ── */
+.sc{font-family:var(--MONO);font-size:9px;font-weight:500;padding:3px 9px;border-radius:20px;letter-spacing:.3px;white-space:nowrap}
 .scP{background:#FFFBEB;color:#92400E;border:1px solid #FDE68A}
 .scA{background:#ECFDF5;color:#065F46;border:1px solid #A7F3D0}
 .scO{background:#FFF7ED;color:#9A3412;border:1px solid #FDBA74}
 .scD{background:#FEF2F2;color:#991B1B;border:1px solid #FECACA}
 .scC{background:var(--G6);color:var(--G3);border:1px solid var(--G5)}
+[data-theme="dark"] .scP{background:#3D2D00;color:#FCD34D;border-color:#92400E}
+[data-theme="dark"] .scA{background:#064E3B;color:#6EE7B7;border-color:#10B981}
+[data-theme="dark"] .scO{background:#431407;color:#FB923C;border-color:#C2410C}
+[data-theme="dark"] .scD{background:#4C0519;color:#FCA5A5;border-color:#DC2626}
+[data-theme="dark"] .scC{background:var(--G6);color:var(--G4);border-color:var(--G5)}
 
-/* ━━━ FLOW ━━━ */
-.flow{
-  display:flex;align-items:center;gap:4px;
-  padding:12px;background:var(--BG);border-radius:var(--RAD2);
-  margin-bottom:12px;overflow-x:auto;border:1px solid var(--G5);
-}
+/* ── FLOW ── */
+.flow{display:flex;align-items:center;gap:4px;padding:12px;background:var(--BG);border-radius:var(--RAD2);margin-bottom:12px;overflow-x:auto;border:1px solid var(--G5)}
 .fl-s{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:52px}
-.fl-d{
-  width:32px;height:32px;border-radius:50%;border:2px solid var(--G5);
-  display:flex;align-items:center;justify-content:center;font-size:13px;
-  background:var(--W);transition:all .3s;
-}
-.fl-d.done{border-color:var(--GRN);background:var(--GRN);color:var(--W)}
-.fl-d.act{border-color:var(--R);background:var(--R);color:var(--W);animation:pulse 2s infinite}
+.fl-d{width:32px;height:32px;border-radius:50%;border:2px solid var(--G5);display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--W);transition:all .3s}
+.fl-d.done{border-color:var(--GRN);background:var(--GRN);color:#fff}
+.fl-d.act{border-color:var(--R);background:var(--R);color:#fff;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(200,16,46,.3)}70%{box-shadow:0 0 0 8px rgba(200,16,46,0)}}
 .fl-d.rej{border-color:var(--R);background:rgba(200,16,46,.06);color:var(--R)}
 .fl-l{font-size:9px;color:var(--G4);text-align:center;font-weight:600;letter-spacing:.3px;text-transform:uppercase;white-space:nowrap}
-.fl-line{flex:1;height:1px;background:var(--G5);min-width:8px}
-.fl-line.done{background:var(--GRN)}
+.fl-line{flex:1;height:1px;background:var(--G5);min-width:8px}.fl-line.done{background:var(--GRN)}
 
-/* ━━━ VUELO CARDS ━━━ */
-.vc{
-  background:var(--W);border:1px solid var(--G5);border-radius:var(--RAD);
-  padding:14px;margin-bottom:10px;cursor:pointer;
-  transition:all .2s;box-shadow:var(--SH1);overflow:hidden;position:relative;
-}
+/* ── VUELO CARDS ── */
+.vc{background:var(--W);border:1px solid var(--G5);border-radius:var(--RAD);padding:14px;margin-bottom:10px;cursor:pointer;transition:var(--TR);box-shadow:var(--SH1);overflow:hidden;position:relative}
 .vc:hover{box-shadow:var(--SH2);transform:translateY(-1px);border-color:var(--G4)}
 .vc:active{transform:scale(.99)}
 .vst{position:absolute;top:0;left:0;right:0;height:3px}
-.vst.PENDIENTE{background:var(--YLW)}
-.vst.APROBADO{background:var(--GRN)}
-.vst.OBSERVADO{background:var(--ORG)}
-.vst.DENEGADO{background:var(--R)}
-.vst.CONCLUIDO{background:var(--G4)}
+.vst.PENDIENTE{background:var(--YLW)}.vst.APROBADO{background:var(--GRN)}.vst.OBSERVADO{background:var(--ORG)}.vst.DENEGADO{background:var(--R)}.vst.CONCLUIDO{background:var(--G4)}
 .v-place{font-size:15px;font-weight:700;color:var(--G1);margin-top:2px}
 .v-quad{font-size:11px;color:var(--G3);font-weight:500;margin-top:2px}
 .v-auth{font-size:10px;color:var(--GRN);font-weight:700;margin-top:1px;font-family:var(--MONO)}
 .v-meta{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:9px;font-size:11px;color:var(--G4)}
 .v-meta strong{color:var(--G2);font-weight:600}
-.v-foot{display:flex;align-items:center;justify-content:space-between;margin-top:9px;padding-top:9px;border-top:1px solid var(--G6)}
+.v-foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--G6)}
 
-/* ━━━ BUTTONS ━━━ */
-.btn{
-  padding:13px 18px;border:none;border-radius:var(--RAD2);
-  font-family:var(--FONT);font-size:13px;font-weight:700;letter-spacing:.5px;
-  cursor:pointer;text-transform:uppercase;transition:all .2s;
-  display:flex;align-items:center;justify-content:center;gap:7px;
-}
-.btn:active{transform:scale(.97)}
-.btn:disabled{opacity:.45;cursor:not-allowed}
-.bw{width:100%}
-.bp{background:var(--R);color:var(--W);box-shadow:0 3px 10px rgba(200,16,46,.25)}
-.bp:hover{background:var(--R2)}
-.bg{background:var(--GRN);color:var(--W);box-shadow:0 3px 10px rgba(0,135,90,.2)}
-.br{background:var(--W);border:1.5px solid var(--R);color:var(--R)}
-.bgh{background:var(--W);border:1.5px solid var(--G5);color:var(--G2)}
-.bsm{padding:9px 14px;font-size:11px}
+/* ── SYNC BAR ── */
+.sbar{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--G4);margin-bottom:10px;padding:8px 12px;background:var(--W);border:1px solid var(--G5);border-radius:var(--RAD2)}
+.srefresh{background:none;border:none;color:var(--R);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--FONT)}
+.frow{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px}
+.frow::-webkit-scrollbar{height:0}
+.ftag{flex-shrink:0;padding:6px 13px;border-radius:20px;border:1.5px solid var(--G5);background:var(--W);color:var(--G3);font-size:11px;font-weight:700;cursor:pointer;transition:var(--TR);font-family:var(--FONT)}
+.ftag.on{border-color:var(--R);background:var(--Rlight);color:var(--R)}
 
-/* ━━━ SYNC BAR ━━━ */
-.sbar{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:9px 13px;background:var(--W);border:1px solid var(--G5);
-  border-radius:var(--RAD2);margin-bottom:12px;font-size:11px;color:var(--G3);font-weight:500;
-  box-shadow:var(--SH1);
-}
-.srefresh{
-  padding:4px 11px;border:1px solid var(--G5);border-radius:6px;
-  background:var(--BG);color:var(--G3);font-size:10px;font-weight:700;
-  cursor:pointer;font-family:var(--FONT);letter-spacing:.5px;text-transform:uppercase;
-}
+/* ── MAP ── */
+.map-container{flex:1;position:relative;overflow:hidden}
+.map-container iframe{width:100%;height:100%;border:none;display:block}
+.coord-pill{position:absolute;bottom:52px;left:50%;transform:translateX(-50%);background:rgba(26,29,35,.85);backdrop-filter:blur(8px);color:#fff;padding:6px 14px;border-radius:20px;font-size:11px;font-family:var(--MONO);font-weight:500;cursor:pointer;white-space:nowrap;border:1px solid rgba(255,255,255,.15)}
+.map-statusbar{height:44px;background:var(--W);border-top:1px solid var(--G5);display:flex;align-items:center;justify-content:space-between;padding:0 14px;flex-shrink:0;transition:var(--TR)}
+.map-loc-label{font-size:10px;color:var(--G3);font-weight:600;letter-spacing:.3px}
+.map-open-btn{display:flex;align-items:center;gap:5px;background:var(--R);color:#fff;border:none;border-radius:var(--RAD2);padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--FONT)}
 
-/* ━━━ FILTER ROW ━━━ */
-.frow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.ftag{
-  padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;
-  cursor:pointer;border:1.5px solid var(--G5);background:var(--W);
-  color:var(--G3);font-family:var(--FONT);transition:all .2s;
-}
-.ftag.on{border-color:var(--R);color:var(--R);background:var(--Rlight)}
-.ftag:hover:not(.on){border-color:var(--G3)}
-
-/* ━━━ MAP ━━━ */
-.map-wrap{border-radius:var(--RAD);overflow:hidden;border:1px solid var(--G5);box-shadow:var(--SH1)}
-#map-frame{
-  width:100%;height:calc(100vh - var(--HDR) - var(--TABS) - 130px);
-  border:none;
-}
-.map-tb{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-.mtag{
-  padding:6px 12px;border-radius:20px;font-size:11px;font-weight:600;
-  cursor:pointer;border:1.5px solid var(--G5);background:var(--W);
-  color:var(--G3);font-family:var(--FONT);transition:all .2s;
-}
-.mtag.on{border-color:var(--R);color:var(--R);background:var(--Rlight)}
-.map-footer{
-  margin-top:8px;padding:9px 13px;background:var(--W);
-  border:1px solid var(--G5);border-radius:var(--RAD2);
-  font-size:11px;color:var(--G3);font-weight:500;
-  display:flex;align-items:center;gap:7px;
-}
-
-/* ━━━ STATS ━━━ */
+/* ── STATS ── */
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
-.stat-box{
-  background:var(--W);border:1px solid var(--G5);border-radius:var(--RAD);
-  padding:14px 13px;text-align:center;box-shadow:var(--SH1);
-  position:relative;overflow:hidden;
-}
+.stat-box{background:var(--W);border:1px solid var(--G5);border-radius:var(--RAD);padding:14px 13px;text-align:center;box-shadow:var(--SH1);position:relative;overflow:hidden;transition:var(--TR)}
 .stat-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.st1::before{background:var(--R)}.st2::before{background:var(--YLW)}
-.st3::before{background:var(--GRN)}.st4::before{background:var(--G4)}
+.st1::before{background:var(--R)}.st2::before{background:var(--YLW)}.st3::before{background:var(--GRN)}.st4::before{background:var(--G4)}
 .stat-n{font-size:32px;font-weight:700;line-height:1;font-family:var(--MONO)}
 .stat-l{font-size:10px;color:var(--G4);margin-top:3px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
 
-/* ━━━ ADMIN GATE ━━━ */
+/* ── ADMIN GATE ── */
 .gate-wrap{max-width:400px;margin:0 auto;padding-top:10px}
-.gate{
-  background:var(--W);border:1px solid var(--G5);border-radius:var(--RAD);
-  padding:28px 22px;text-align:center;box-shadow:var(--SH2);overflow:hidden;position:relative;
-}
+.gate{background:var(--W);border:1px solid var(--G5);border-radius:var(--RAD);padding:28px 22px;text-align:center;box-shadow:var(--SH2);overflow:hidden;position:relative;transition:var(--TR)}
 .gate::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--R)}
-.gate-emblem{
-  width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--R),var(--Rd));
-  display:flex;align-items:center;justify-content:center;
-  margin:0 auto 16px;box-shadow:0 4px 16px rgba(200,16,46,.3);font-size:28px;
-}
-.gate-title{
-  font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;
-  color:var(--G1);margin-bottom:4px;
-}
+.gate-emblem{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,var(--R),var(--Rd));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 4px 16px rgba(200,16,46,.3);font-size:28px}
+.gate-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;color:var(--G1);margin-bottom:4px}
 .gate-sub{font-size:12px;color:var(--G3);margin-bottom:22px;line-height:1.7}
-.gate-inp{
-  width:100%;background:var(--BG);border:1.5px solid var(--G5);
-  border-radius:var(--RAD2);padding:14px;color:var(--G1);
-  font-size:22px;font-family:var(--MONO);font-weight:500;
-  outline:none;text-align:center;letter-spacing:6px;
-  margin-bottom:12px;transition:all .2s;
-}
+.gate-inp{width:100%;background:var(--BG);border:1.5px solid var(--G5);border-radius:var(--RAD2);padding:14px;color:var(--G1);font-size:22px;font-family:var(--MONO);font-weight:500;outline:none;text-align:center;letter-spacing:6px;margin-bottom:12px;transition:var(--TR)}
 .gate-inp:focus{border-color:var(--R);background:var(--W);box-shadow:0 0 0 3px var(--Rlight)}
-.admin-bar{
-  background:linear-gradient(135deg,#FEF2F2,#FFF5F5);
-  border:1px solid rgba(200,16,46,.15);border-radius:var(--RAD2);
-  padding:10px 14px;margin-bottom:12px;
-  display:flex;align-items:center;justify-content:space-between;
-}
+.admin-bar{background:linear-gradient(135deg,rgba(200,16,46,.08),rgba(200,16,46,.04));border:1px solid rgba(200,16,46,.15);border-radius:var(--RAD2);padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
 .admin-bar-l{font-size:11px;color:var(--R);font-weight:700;display:flex;align-items:center;gap:7px;letter-spacing:.3px}
 
-/* ━━━ MODAL ━━━ */
-.mo{
-  position:fixed;inset:0;background:rgba(26,29,35,.6);
-  z-index:800;display:none;align-items:flex-end;
-  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
-}
+/* ── MODAL ── */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:800;display:none;align-items:flex-end;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 .mo.open{display:flex}
-.md{
-  width:100%;background:var(--W);
-  border-radius:20px 20px 0 0;
-  border-top:3px solid var(--R);
-  padding:20px 16px 24px;max-height:92vh;overflow-y:auto;
-  animation:mup .28s cubic-bezier(.16,1,.3,1);
-}
+.md{width:100%;background:var(--W);border-radius:20px 20px 0 0;border-top:3px solid var(--R);padding:20px 16px 24px;max-height:92vh;overflow-y:auto;animation:mup .28s cubic-bezier(.16,1,.3,1);transition:background .25s}
 @keyframes mup{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .handle{width:36px;height:4px;background:var(--G5);border-radius:2px;margin:0 auto 18px}
 .md-ttl{font-size:18px;font-weight:700;color:var(--G1);margin-bottom:14px}
 .md-ttl span{color:var(--R)}
 
-/* ━━━ TOAST ━━━ */
-.toast{
-  position:fixed;bottom:20px;left:50%;
-  transform:translateX(-50%) translateY(14px);
-  padding:11px 18px;border-radius:var(--RAD2);
-  font-weight:700;font-size:12px;z-index:9999;opacity:0;
-  transition:all .26s cubic-bezier(.16,1,.3,1);
-  pointer-events:none;max-width:88vw;text-align:center;
-  font-family:var(--FONT);letter-spacing:.3px;
-  display:flex;align-items:center;gap:8px;
-  box-shadow:var(--SH3);
-}
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(14px);padding:11px 18px;border-radius:var(--RAD2);font-weight:700;font-size:12px;z-index:9999;opacity:0;transition:all .26s cubic-bezier(.16,1,.3,1);pointer-events:none;max-width:88vw;text-align:center;font-family:var(--FONT);letter-spacing:.3px;display:flex;align-items:center;gap:8px;box-shadow:var(--SH3)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.tok{background:var(--GRN);color:var(--W)}
-.terr{background:var(--R);color:var(--W)}
-.tinf{background:var(--G1);color:var(--W)}
-.twarn{background:var(--YLW);color:var(--G1)}
+.tok{background:var(--GRN);color:#fff}.terr{background:var(--R);color:#fff}.tinf{background:var(--G1);color:#fff}.twarn{background:var(--YLW);color:var(--G1)}
 
-/* ━━━ SPINNER ━━━ */
+/* ── SPINNER ── */
 .spin-wrap{text-align:center;padding:36px;color:var(--G4)}
 .spin{width:28px;height:28px;border:2px solid var(--G5);border-top-color:var(--R);border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 12px}
 @keyframes sp{to{transform:rotate(360deg)}}
@@ -438,48 +272,57 @@ body{background:var(--BG);color:var(--G1);display:flex;flex-direction:column}
 .empty-txt{font-size:13px;font-weight:600;color:var(--G3)}
 .empty-sub{font-size:12px;color:var(--G4);margin-top:4px}
 
-/* ━━━ SCROLL ━━━ */
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--G5);border-radius:2px}
+/* ── SCROLL ── */
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--G5);border-radius:2px}
 
-/* ━━━ IA CHIPS ━━━ */
-.pchip{
-  padding:8px 6px;border-radius:var(--RAD2);border:1.5px solid var(--G5);
-  background:var(--W);color:var(--G3);font-size:12px;font-weight:700;
-  text-align:center;cursor:pointer;transition:all .18s;font-family:var(--FONT);
-}
+/* ── IA ── */
+.pchip{padding:8px 6px;border-radius:var(--RAD2);border:1.5px solid var(--G5);background:var(--W);color:var(--G3);font-size:12px;font-weight:700;text-align:center;cursor:pointer;transition:var(--TR);font-family:var(--FONT)}
 .pchip.on{border-color:var(--R);background:var(--Rlight);color:var(--R)}
 .pchip:hover:not(.on){border-color:var(--G3);color:var(--G1)}
-
-/* ━━━ ZONA ROW ━━━ */
-.zona-row{
-  display:grid;grid-template-columns:1fr auto auto auto;
-  align-items:center;gap:8px;
-  padding:11px 14px;border-bottom:1px solid var(--G6);font-size:12px;
-}
+.zona-row{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--G6);font-size:12px}
 .zona-row:last-child{border-bottom:none}
 .zona-name{font-weight:700;color:var(--G1)}
 .zona-bar-wrap{width:60px;height:5px;background:var(--G5);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle}
 .zona-bar{height:100%;background:var(--R);border-radius:3px;transition:width .6s ease}
 .zona-count{font-family:var(--MONO);font-size:11px;font-weight:500;color:var(--G2);min-width:20px;text-align:right}
 .zona-time{font-family:var(--MONO);font-size:10px;color:var(--G3);min-width:50px;text-align:right}
-
-/* ━━━ METRIC MINI ━━━ */
-.metric-mini{
-  background:var(--W);border:1px solid var(--G5);border-radius:var(--RAD2);
-  padding:11px 10px;text-align:center;box-shadow:var(--SH1);
-}
+.metric-mini{background:var(--W);border:1px solid var(--G5);border-radius:var(--RAD2);padding:11px 10px;text-align:center;box-shadow:var(--SH1);transition:var(--TR)}
 .metric-mini-n{font-family:var(--MONO);font-size:22px;font-weight:700;line-height:1}
 .metric-mini-l{font-size:9px;color:var(--G4);margin-top:3px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
-
-/* ━━━ IA TEXT FORMATTING ━━━ */
 .ia-section{margin-bottom:16px}
 .ia-section-title{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--R);margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--G5)}
 .ia-para{font-size:13px;line-height:1.85;color:var(--G1);margin-bottom:8px}
 .ia-bullet{font-size:12px;line-height:1.8;color:var(--G2);padding-left:14px;position:relative;margin-bottom:4px}
 .ia-bullet::before{content:'▸';position:absolute;left:0;color:var(--R);font-size:11px}
-.ia-highlight{background:rgba(200,16,46,.06);border-left:3px solid var(--R);padding:9px 12px;border-radius:0 var(--RAD2) var(--RAD2) 0;margin:10px 0;font-size:12px;color:var(--G1)}
+
+/* ── BUTTONS ── */
+.btn{width:100%;padding:14px;border-radius:var(--RAD2);border:none;font-family:var(--FONT);font-size:13px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:var(--TR);text-transform:uppercase;margin-bottom:8px;display:block}
+.bp{background:var(--G1);color:#fff}.bp:hover{background:var(--G2)}
+.br{background:var(--R);color:#fff}.br:hover{background:var(--Rd)}
+.bg{background:var(--GRN);color:#fff}.bg:hover{filter:brightness(1.1)}
+.bgh{background:var(--G6);color:var(--G2);border:1px solid var(--G5)}.bgh:hover{background:var(--G5)}
+.bw{margin-bottom:0}
+.bsm{font-size:11px;padding:9px 12px;width:auto;display:inline-block}
+[data-theme="dark"] .bp{background:var(--G5);color:var(--G1)}
+[data-theme="dark"] .bgh{background:var(--G6);color:var(--G2);border-color:var(--G5)}
+
+/* ── DASHBOARD ── */
+.dash-kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.kpi-card{background:var(--W);border:1px solid var(--G5);border-radius:var(--RAD);padding:14px 13px;box-shadow:var(--SH1);position:relative;overflow:hidden;transition:var(--TR)}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi-r::before{background:var(--R)}.kpi-y::before{background:var(--YLW)}.kpi-g::before{background:var(--GRN)}.kpi-b::before{background:var(--BLU)}
+.kpi-n{font-size:34px;font-weight:700;line-height:1;font-family:var(--MONO)}
+.kpi-l{font-size:10px;color:var(--G4);margin-top:3px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.kpi-sub{font-size:10px;color:var(--G3);margin-top:4px}
+.chart-wrap{background:var(--W);border:1px solid var(--G5);border-radius:var(--RAD);padding:14px;margin-bottom:12px;box-shadow:var(--SH1);transition:var(--TR)}
+.chart-ttl{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--G3);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.chart-canvas{width:100%!important;max-height:200px}
+
+/* ── QR MODAL ── */
+#qr-modal .md{text-align:center}
+#qr-container{display:flex;justify-content:center;margin:16px 0}
+#qr-container canvas,#qr-container img{border-radius:var(--RAD2)}
+.qr-url{font-size:10px;color:var(--G4);font-family:var(--MONO);word-break:break-all;background:var(--BG);border-radius:var(--RAD2);padding:8px;margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -498,7 +341,8 @@ body{background:var(--BG);color:var(--G1);display:flex;flex-direction:column}
     </div>
   </div>
   <div class="hdr-actions">
-    <div class="pill pill-on" id="pill-conn"><span class="dot"></span><span id="conn-txt">ONLINE</span></div>
+    <div class="pill pill-on" id="pill-conn" onclick="checkConn()"><span class="dot"></span><span id="conn-txt">ONLINE</span></div>
+    <button class="btn-theme" id="btn-theme" onclick="toggleTheme()" title="Modo oscuro/claro">🌙</button>
     <button class="btn-lock" id="btn-lock" onclick="goTab('control')">🔒 Control</button>
   </div>
 </div>
@@ -506,29 +350,26 @@ body{background:var(--BG);color:var(--G1);display:flex;flex-direction:column}
 <!-- ━━━━━ TABS ━━━━━ -->
 <div class="tabs">
   <button class="tab on" id="t0" onclick="goTab('plan',this)">
-    <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-    Plan
+    <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Plan
   </button>
   <button class="tab" id="t1" onclick="goTab('vuelos',this)">
-    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-    Vuelos
+    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Vuelos
     <span class="tab-badge" id="tb-pend" style="display:none">0</span>
   </button>
   <button class="tab" id="t2" onclick="goTab('checklist',this)">
-    <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-    Checklist
+    <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Check
   </button>
   <button class="tab" id="t3" onclick="goTab('mapa',this)">
-    <svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
-    Mapa
+    <svg viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>Mapa
   </button>
   <button class="tab" id="t4" onclick="goTab('control',this)">
-    <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-    Control
+    <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Control
   </button>
-  <button class="tab" id="t5" onclick="goTab('ia',this)" style="display:none">
-    <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 010 2h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 010-2h1a7 7 0 017-7h1V5.73A2 2 0 0110 4a2 2 0 012-2z"/></svg>
-    IA
+  <button class="tab" id="t5" onclick="goTab('dash',this)" style="display:none">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Stats
+  </button>
+  <button class="tab" id="t6" onclick="goTab('ia',this)" style="display:none">
+    <svg viewBox="0 0 24 24"><path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 010 2h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 010-2h1a7 7 0 017-7h1V5.73A2 2 0 0110 4a2 2 0 012-2z"/></svg>IA
   </button>
 </div>
 
@@ -537,18 +378,11 @@ body{background:var(--BG);color:var(--G1);display:flex;flex-direction:column}
 
 <!-- ═══ PLAN DE VUELO ═══ -->
 <div class="screen on" id="s-plan">
-
-  <div class="alert ai">
-    <span style="font-size:15px;flex-shrink:0">ℹ</span>
-    <div>Todo vuelo requiere aprobación del <strong>Centro de Control</strong>. Solicitar con mínimo <strong>2 horas</strong> de anticipación — 12h para misiones especiales. <em style="font-size:11px">§6.2</em></div>
-  </div>
-
-  <!-- Lugar -->
+  <div class="alert ai"><span style="font-size:15px;flex-shrink:0">ℹ</span><div>Todo vuelo requiere aprobación del <strong>Centro de Control</strong>. Solicitar con mínimo <strong>2 horas</strong> de anticipación — 12h para misiones especiales. <em style="font-size:11px">§6.2</em></div></div>
   <div class="sec"><span>Ubicación</span><span class="sec-line"></span></div>
   <div class="card">
     <div class="card-ttl"><div class="card-ttl-icon">📍</div>Lugar y Cuadrante de Operación</div>
-    <div class="fg">
-      <label class="fl">Lugar / Tajo <span class="req">*</span></label>
+    <div class="fg"><label class="fl">Lugar / Tajo <span class="req">*</span></label>
       <select class="fs" id="lugar" onchange="lugarChg()">
         <option value="">— Seleccionar zona operativa —</option>
         <option>TAJO FERROBAMBA</option><option>TAJO CHALCOBAMBA</option>
@@ -558,12 +392,8 @@ body{background:var(--BG);color:var(--G1);display:flex;flex-direction:column}
         <option value="OTRO">Otro (especificar)…</option>
       </select>
     </div>
-    <div class="fg" id="otro-w" style="display:none">
-      <label class="fl">Especificar ubicación</label>
-      <input class="fi" id="lugar-o" placeholder="Nombre del área o sector…">
-    </div>
-    <div class="fg">
-      <label class="fl">Cuadrante de vuelo <span class="req">*</span></label>
+    <div class="fg" id="otro-w" style="display:none"><label class="fl">Especificar ubicación</label><input class="fi" id="lugar-o" placeholder="Nombre del área o sector…"></div>
+    <div class="fg"><label class="fl">Cuadrante de vuelo</label>
       <select class="fs" id="cuadrante">
         <option value="">— Según mapa de cuadrantes vigente —</option>
         <option>CUADRANTE A1</option><option>CUADRANTE A2</option><option>CUADRANTE A3</option>
@@ -573,30 +403,17 @@ body{background:var(--BG);color:var(--G1);display:flex;flex-direction:column}
       </select>
     </div>
   </div>
-
-  <!-- Tiempo -->
   <div class="sec"><span>Ventana de Vuelo</span><span class="sec-line"></span></div>
   <div class="card">
     <div class="card-ttl"><div class="card-ttl-icon">🗓</div>Fecha y Horario</div>
-    <div class="fg">
-      <label class="fl">Fecha de operación <span class="req">*</span></label>
-      <input type="date" class="fi" id="fecha">
-    </div>
-    <div class="fg">
-      <label class="fl">Ventana horaria <span class="req">*</span></label>
+    <div class="fg"><label class="fl">Fecha de operación <span class="req">*</span></label><input type="date" class="fi" id="fecha"></div>
+    <div class="fg"><label class="fl">Ventana horaria <span class="req">*</span></label>
       <div class="time-grid">
-        <div class="time-box">
-          <div class="time-label-top">Hora inicio</div>
-          <input type="time" class="time-input" id="hi">
-        </div>
-        <div class="time-box">
-          <div class="time-label-top">Hora fin</div>
-          <input type="time" class="time-input" id="hf">
-        </div>
+        <div class="time-box"><div class="time-label-top">Hora inicio</div><input type="time" class="time-input" id="hi"></div>
+        <div class="time-box"><div class="time-label-top">Hora fin</div><input type="time" class="time-input" id="hf"></div>
       </div>
     </div>
-    <div class="fg">
-      <label class="fl">Altura máxima de vuelo</label>
+    <div class="fg"><label class="fl">Altura máxima de vuelo</label>
       <select class="fs" id="alt">
         <option value="">— Seleccionar altitud —</option>
         <option value="50">50 m — Inspección visual cercana</option>
@@ -609,18 +426,12 @@ body{background:var(--BG);color:var(--G1);display:flex;flex-direction:column}
         <option value="otro">Otra altitud (especificar)</option>
       </select>
     </div>
-    <div class="fg" id="alt-otro-w" style="display:none">
-      <label class="fl">Altitud específica (metros)</label>
-      <input type="number" class="fi" id="alt-otro" placeholder="Ej: 180">
-    </div>
+    <div class="fg" id="alt-otro-w" style="display:none"><label class="fl">Altitud específica (metros)</label><input type="number" class="fi" id="alt-otro" placeholder="Ej: 180"></div>
   </div>
-
-  <!-- Drone -->
   <div class="sec"><span>Aeronave RPAS</span><span class="sec-line"></span></div>
   <div class="card">
     <div class="card-ttl"><div class="card-ttl-icon">🚁</div>Selección de Aeronave</div>
-    <div class="fg">
-      <label class="fl">Modelo de RPA <span class="req">*</span></label>
+    <div class="fg"><label class="fl">Modelo de RPA <span class="req">*</span></label>
       <div class="drone-grid" id="drone-grid">
         <div class="drone-card on" onclick="selDrone(this,'DJI Matrice M300 RTK')"><span class="drone-ico">🚁</span><div class="drone-info"><div class="dn">M300 RTK</div><div class="dm">DJI · 6.3 kg</div></div></div>
         <div class="drone-card" onclick="selDrone(this,'DJI Matrice M350 RTK')"><span class="drone-ico">🚁</span><div class="drone-info"><div class="dn">M350 RTK</div><div class="dm">DJI · 6.47 kg</div></div></div>
@@ -636,12 +447,8 @@ body{background:var(--BG);color:var(--G1);display:flex;flex-direction:column}
         <div class="drone-card" onclick="selDrone(this,'Otro modelo')"><span class="drone-ico">⚙</span><div class="drone-info"><div class="dn">Otro modelo</div><div class="dm">Especificar</div></div></div>
       </div>
     </div>
-    <div class="fg">
-      <label class="fl">Número de serie <span class="req">*</span></label>
-      <input class="fi" id="serie" placeholder="Ej: 1ZNBL2800C00JM">
-    </div>
-    <div class="fg">
-      <label class="fl">Objetivo / Misión <span class="req">*</span></label>
+    <div class="fg"><label class="fl">Número de serie <span class="req">*</span></label><input class="fi" id="serie" placeholder="Ej: 1ZNBL2800C00JM"></div>
+    <div class="fg"><label class="fl">Objetivo / Misión <span class="req">*</span></label>
       <select class="fs" id="mision">
         <option>Fotogrametría</option><option>Inspección visual</option>
         <option>Topografía y levantamiento</option><option>Supervisión de operaciones</option>
@@ -651,15 +458,10 @@ body{background:var(--BG);color:var(--G1);display:flex;flex-direction:column}
       </select>
     </div>
   </div>
-
-  <!-- Piloto -->
   <div class="sec"><span>Personal Acreditado</span><span class="sec-line"></span></div>
   <div class="card">
     <div class="card-ttl"><div class="card-ttl-icon">👷</div>Piloto(s) RPAS</div>
-    <div class="alert aw" style="margin-bottom:14px">
-      <span style="font-size:14px;flex-shrink:0">⚠</span>
-      <div style="font-size:11px">Piloto debe contar con <strong>licencia DGAC (MTC)</strong> y <strong>licencia interna Gestión Vial MLB</strong> vigentes y actualizadas en Web Control. §6.3</div>
-    </div>
+    <div class="alert aw" style="margin-bottom:14px"><span style="font-size:14px;flex-shrink:0">⚠</span><div style="font-size:11px">Piloto debe contar con <strong>licencia DGAC (MTC)</strong> y <strong>licencia interna Gestión Vial MLB</strong> vigentes. §6.3</div></div>
     <div class="fg"><label class="fl">Piloto principal <span class="req">*</span></label><input class="fi" id="p1" placeholder="Apellidos y nombres completos"></div>
     <div class="fr2">
       <div class="fg"><label class="fl">DNI <span class="req">*</span></label><input type="number" class="fi" id="d1" placeholder="Número de DNI"></div>
@@ -669,24 +471,17 @@ body{background:var(--BG);color:var(--G1);display:flex;flex-direction:column}
     <div class="fg"><label class="fl">Co-piloto / Observador</label><input class="fi" id="p2" placeholder="Apellidos y nombres (opcional)"></div>
     <div class="fg"><label class="fl">DNI co-piloto</label><input type="number" class="fi" id="d2" placeholder="Número de DNI"></div>
   </div>
-
-  <!-- Empresa -->
   <div class="sec"><span>Empresa y Área</span><span class="sec-line"></span></div>
   <div class="card">
     <div class="card-ttl"><div class="card-ttl-icon">🏢</div>Datos Organizacionales</div>
-    <div class="fg">
-      <label class="fl">Empresa <span class="req">*</span></label>
+    <div class="fg"><label class="fl">Empresa <span class="req">*</span></label>
       <select class="fs" id="empresa" onchange="empresaChg()">
         <option value="MINERA LAS BAMBAS">MINERA LAS BAMBAS (MMG)</option>
         <option value="CONTRATISTA">Empresa Contratista</option>
       </select>
     </div>
-    <div class="fg" id="contra-w" style="display:none">
-      <label class="fl">Nombre del contratista</label>
-      <input class="fi" id="contra-n" placeholder="Razón social completa">
-    </div>
-    <div class="fg">
-      <label class="fl">Gerencia / Área <span class="req">*</span></label>
+    <div class="fg" id="contra-w" style="display:none"><label class="fl">Nombre del contratista</label><input class="fi" id="contra-n" placeholder="Razón social completa"></div>
+    <div class="fg"><label class="fl">Gerencia / Área <span class="req">*</span></label>
       <select class="fs" id="gerencia">
         <option>SS-TT · Servicios Técnicos</option><option>PI · Planeamiento e Ingeniería</option>
         <option>Operaciones Mina</option><option>Medio Ambiente</option>
@@ -695,19 +490,13 @@ body{background:var(--BG);color:var(--G1);display:flex;flex-direction:column}
       </select>
     </div>
   </div>
-
-  <button class="btn bp bw" id="btn-reg" onclick="submitVuelo()" style="margin-bottom:6px">
-    ✈ ENVIAR SOLICITUD AL CENTRO DE CONTROL
-  </button>
+  <button class="btn br bw" id="btn-reg" onclick="submitVuelo()">✈ ENVIAR SOLICITUD AL CENTRO DE CONTROL</button>
   <div style="height:24px"></div>
 </div>
 
 <!-- ═══ VUELOS ═══ -->
 <div class="screen" id="s-vuelos">
-  <div class="sbar">
-    <span id="sync-lbl">Cargando registros…</span>
-    <button class="srefresh" onclick="loadVuelos()">↻ Actualizar</button>
-  </div>
+  <div class="sbar"><span id="sync-lbl">Cargando registros…</span><button class="srefresh" onclick="loadVuelos()">↻ Actualizar</button></div>
   <div class="frow" id="f-row">
     <button class="ftag on" onclick="filt('ALL',this)">Todos</button>
     <button class="ftag" onclick="filt('PENDIENTE',this)">Pendientes</button>
@@ -721,26 +510,15 @@ body{background:var(--BG);color:var(--G1);display:flex;flex-direction:column}
 
 <!-- ═══ CHECKLIST ═══ -->
 <div class="screen" id="s-checklist">
-  <div class="alert ai">
-    <span style="font-size:15px;flex-shrink:0">📋</span>
-    <div style="font-size:11px">Completar el Check List antes de armar motores. Enviar evidencia fotográfica al Centro de Control. <em>§6.5</em></div>
-  </div>
+  <div class="alert ai"><span style="font-size:15px;flex-shrink:0">📋</span><div style="font-size:11px">Completar el Check List antes de armar motores. Enviar evidencia fotográfica al Centro de Control. <em>§6.5</em></div></div>
   <div class="sec"><span>Vincular Vuelo</span><span class="sec-line"></span></div>
   <div class="card">
     <div class="card-ttl"><div class="card-ttl-icon">🔗</div>Plan de Vuelo Asociado</div>
-    <div class="fg">
-      <label class="fl">Vuelo registrado</label>
-      <select class="fs" id="cl-vuelo"><option value="">— Seleccionar vuelo aprobado o pendiente —</option></select>
-    </div>
-    <div class="fg">
-      <label class="fl">Tipo de verificación</label>
+    <div class="fg"><label class="fl">Vuelo registrado</label><select class="fs" id="cl-vuelo"><option value="">— Seleccionar vuelo aprobado o pendiente —</option></select></div>
+    <div class="fg"><label class="fl">Tipo de verificación</label>
       <div style="display:flex;gap:8px">
-        <div class="drone-card on" id="cl-pre" onclick="selCLT(this,'PRE')" style="flex:1;justify-content:center;gap:6px;padding:10px">
-          <span>✅</span><span style="font-size:12px;font-weight:700">Pre-vuelo</span>
-        </div>
-        <div class="drone-card" id="cl-post" onclick="selCLT(this,'POST')" style="flex:1;justify-content:center;gap:6px;padding:10px">
-          <span>🏁</span><span style="font-size:12px;font-weight:700">Post-vuelo</span>
-        </div>
+        <div class="drone-card on" id="cl-pre" onclick="selCLT(this,'PRE')" style="flex:1;justify-content:center;gap:6px;padding:10px"><span>✅</span><span style="font-size:12px;font-weight:700">Pre-vuelo</span></div>
+        <div class="drone-card" id="cl-post" onclick="selCLT(this,'POST')" style="flex:1;justify-content:center;gap:6px;padding:10px"><span>🏁</span><span style="font-size:12px;font-weight:700">Post-vuelo</span></div>
       </div>
     </div>
   </div>
@@ -763,72 +541,55 @@ body{background:var(--BG);color:var(--G1);display:flex;flex-direction:column}
   </div>
   <div class="card card-neutral">
     <div class="card-ttl"><div class="card-ttl-icon" style="background:var(--G6)">📝</div>Observaciones</div>
-    <textarea class="fi" id="cl-obs" rows="3" style="resize:none" placeholder="Anomalías encontradas, condiciones especiales a reportar…"></textarea>
+    <textarea class="fi" id="cl-obs" rows="3" style="resize:none" placeholder="Anomalías encontradas, condiciones especiales…"></textarea>
   </div>
   <button class="btn bg bw" onclick="submitCL()">📋 ENVIAR CHECKLIST AL CENTRO DE CONTROL</button>
   <div style="height:24px"></div>
 </div>
 
 <!-- ═══ MAPA ═══ -->
-<div class="screen" id="s-mapa">
-  <div class="map-tb">
-    <button class="mtag on" id="mb-los" onclick="setMapLoc('mine')">⛏ Mina</button>
-    <button class="mtag" id="mb-reg" onclick="setMapLoc('region')">🗺 Región</button>
-    <button class="mtag" id="mb-fer" onclick="setMapLoc('ferro')">🔴 Ferrobamba</button>
-    <button class="mtag" id="mb-cha" onclick="setMapLoc('chalco')">🟠 Chalcobamba</button>
-    <button class="mtag" id="mb-act" onclick="loadMapVuelos()">📍 Vuelos activos</button>
+<div class="screen" id="s-mapa" style="padding:0;display:none;flex-direction:column">
+  <div class="map-container">
+    <iframe id="gmap" src="https://maps.google.com/maps?q=-14.0548,-72.2089&z=15&t=k&output=embed&hl=es" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    <div class="coord-pill" id="coord-pill" onclick="copyCoord()">📍 -14.05480, -72.20890 · Las Bambas</div>
   </div>
-  <div class="map-wrap">
-    <iframe id="map-frame"
-      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15247.0!2d-72.2137!3d-14.0522!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zLTE0LjA1NzXCsDA0JzI5LjgiUyA3MsKwMTMnNTkuOCJX!5e1!3m2!1ses!2spe!4v1234567890"
-      allowfullscreen="" loading="lazy"
-      referrerpolicy="no-referrer-when-downgrade">
-    </iframe>
+  <div class="map-statusbar">
+    <span class="map-loc-label">⛏ Minera Las Bambas · Tajo Ferrobamba · Cotabambas · Apurímac</span>
+    <button class="map-open-btn" onclick="openInGoogleMaps()">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      Abrir Maps
+    </button>
   </div>
-  <div class="map-footer">
-    <span style="color:var(--R);font-size:14px">▶</span>
-    <span id="map-hint">Las Bambas · Cotabambas · Apurímac · Perú</span>
-  </div>
-  <div style="height:24px"></div>
 </div>
 
 <!-- ═══ CONTROL (ADMIN) ═══ -->
 <div class="screen" id="s-control">
-
-  <!-- GATE -->
   <div id="gate-section">
     <div class="gate-wrap">
       <div class="gate">
         <div class="gate-emblem">🛡</div>
         <div class="gate-title">Centro de Control</div>
         <div style="width:36px;height:3px;background:var(--R);margin:8px auto 14px;border-radius:2px"></div>
-        <div class="gate-sub">
-          Acceso exclusivo para<br>
-          <strong>Coordinadores del Centro de Control</strong><br>
-          Gestión y autorización de planes de vuelo RPAS<br>
-          <em style="font-size:11px;color:var(--G4)">GGO-PI-PG-003 · §6.4</em>
-        </div>
+        <div class="gate-sub">Acceso exclusivo para<br><strong>Coordinadores del Centro de Control</strong><br>Gestión y autorización de planes de vuelo RPAS<br><em style="font-size:11px;color:var(--G4)">GGO-PI-PG-003 · §6.4</em></div>
         <input type="password" class="gate-inp" id="adm-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')admLogin()">
         <button class="btn bp bw" onclick="admLogin()">ACCEDER AL SISTEMA</button>
       </div>
     </div>
   </div>
-
-  <!-- PANEL -->
   <div id="adm-panel" style="display:none">
     <div class="admin-bar">
-      <div class="admin-bar-l">
-        <div style="width:7px;height:7px;border-radius:50%;background:var(--R);animation:blink 1s infinite"></div>
-        CENTRO DE CONTROL · SESIÓN ACTIVA
+      <div class="admin-bar-l"><div style="width:7px;height:7px;border-radius:50%;background:var(--R);animation:blink 1s infinite"></div>CENTRO DE CONTROL · SESIÓN ACTIVA</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn bgh bsm" onclick="showQR()">📲 QR</button>
+        <button class="btn bgh bsm" onclick="admOut()">Cerrar sesión</button>
       </div>
-      <button class="btn bgh bsm" onclick="admOut()">Cerrar sesión</button>
     </div>
     <div class="sbar"><span id="adm-lbl">Cargando…</span><button class="srefresh" onclick="loadVuelos(true)">↻ Actualizar</button></div>
     <div class="stats">
       <div class="stat-box st1"><div class="stat-n" id="s-tot" style="color:var(--R)">0</div><div class="stat-l">Total</div></div>
       <div class="stat-box st2"><div class="stat-n" id="s-pen" style="color:var(--YLW)">0</div><div class="stat-l">Pendientes</div></div>
       <div class="stat-box st3"><div class="stat-n" id="s-apr" style="color:var(--GRN)">0</div><div class="stat-l">Aprobados</div></div>
-      <div class="stat-box st4"><div class="stat-n" id="s-den" style="color:var(--G3)">0</div><div class="stat-l">Denegados</div></div>
+      <div class="stat-box st4"><div class="stat-n" id="s-den" style="color:var(--G3)">0</div><div class="stat-l">Den/Concluidos</div></div>
     </div>
     <div id="adm-list"><div class="spin-wrap"><div class="spin"></div>Cargando registros…</div></div>
     <div class="card" style="margin-top:8px;border-color:rgba(200,16,46,.2)">
@@ -839,27 +600,60 @@ body{background:var(--BG);color:var(--G1);display:flex;flex-direction:column}
   </div>
 </div>
 
+<!-- ═══ DASHBOARD KPIs ═══ -->
+<div class="screen" id="s-dash">
+  <div id="dash-lock" style="display:none">
+    <div style="max-width:360px;margin:24px auto 0;text-align:center">
+      <div style="width:60px;height:60px;border-radius:14px;background:var(--BG2);border:1px solid var(--G5);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 16px">🔒</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--G2)">ACCESO RESTRINGIDO</div>
+      <div style="font-size:12px;color:var(--G3);margin-top:6px;line-height:1.6">Solo el <strong>Coordinador</strong><br>puede ver el Dashboard.<br>Inicia sesión en <strong>Control</strong>.</div>
+      <button class="btn br" style="margin-top:18px;padding:11px 28px;width:auto" onclick="goTab('control')">Ir a Control →</button>
+    </div>
+  </div>
+  <div id="dash-panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--G1)">DASHBOARD <span style="color:var(--R)">KPIs</span></div>
+      <button class="srefresh" onclick="renderDash()">↻ Actualizar</button>
+    </div>
+    <div class="dash-kpi">
+      <div class="kpi-card kpi-r"><div class="kpi-n" id="d-tot" style="color:var(--R)">0</div><div class="kpi-l">Total Vuelos</div><div class="kpi-sub" id="d-tot-sub">—</div></div>
+      <div class="kpi-card kpi-y"><div class="kpi-n" id="d-pen" style="color:var(--YLW)">0</div><div class="kpi-l">Pendientes</div><div class="kpi-sub">Esperando aprobación</div></div>
+      <div class="kpi-card kpi-g"><div class="kpi-n" id="d-apr" style="color:var(--GRN)">0</div><div class="kpi-l">Aprobados</div><div class="kpi-sub" id="d-tasa">Tasa —%</div></div>
+      <div class="kpi-card kpi-b"><div class="kpi-n" id="d-mins" style="color:var(--BLU);font-size:22px">—</div><div class="kpi-l">Tiempo vuelo</div><div class="kpi-sub">Hoy</div></div>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-ttl">📍 Vuelos por Zona</div>
+      <canvas id="ch-zonas" class="chart-canvas"></canvas>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-ttl">📊 Estados de Vuelos</div>
+      <canvas id="ch-estados" class="chart-canvas" style="max-height:160px"></canvas>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-ttl">📅 Actividad Semanal</div>
+      <canvas id="ch-semana" class="chart-canvas"></canvas>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-ttl">🚁 Uso de Aeronaves</div>
+      <canvas id="ch-drones" class="chart-canvas" style="max-height:160px"></canvas>
+    </div>
+  </div>
+  <div style="height:24px"></div>
+</div>
 
-<!-- ═══ IA · INFORMES (solo administrador) ═══ -->
+<!-- ═══ IA (solo admin) ═══ -->
 <div class="screen" id="s-ia">
-
-  <!-- BLOQUEADO si no es admin -->
   <div id="ia-lock">
     <div style="max-width:360px;margin:24px auto 0;text-align:center">
       <div style="width:60px;height:60px;border-radius:14px;background:var(--BG2);border:1px solid var(--G5);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 16px">🔒</div>
       <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--G2)">ACCESO RESTRINGIDO</div>
-      <div style="font-size:12px;color:var(--G3);margin-top:6px;line-height:1.6">Este módulo es exclusivo para el<br><strong>Coordinador del Centro de Control</strong>.<br>Inicia sesión primero en la pestaña <strong>Control</strong>.</div>
-      <button class="btn bp" style="margin-top:18px;padding:11px 28px" onclick="goTab('control')">Ir a Control →</button>
+      <div style="font-size:12px;color:var(--G3);margin-top:6px;line-height:1.6">Exclusivo para el<br><strong>Coordinador del Centro de Control</strong>.</div>
+      <button class="btn br" style="margin-top:18px;padding:11px 28px;width:auto" onclick="goTab('control')">Ir a Control →</button>
     </div>
   </div>
-
-  <!-- PANEL ACTIVO solo si admin -->
   <div id="ia-panel" style="display:none">
-
-    <!-- Header IA -->
     <div style="background:linear-gradient(135deg,#0F1923 0%,#1E0A10 60%,var(--Rd) 100%);border-radius:var(--RAD);padding:18px 18px 16px;margin-bottom:14px;position:relative;overflow:hidden">
       <div style="position:absolute;top:-24px;right:-24px;width:110px;height:110px;border-radius:50%;background:rgba(200,16,46,.12)"></div>
-      <div style="position:absolute;bottom:-20px;right:14px;width:65px;height:65px;border-radius:50%;background:rgba(200,16,46,.08)"></div>
       <div style="display:flex;align-items:center;gap:12px;position:relative">
         <div style="width:44px;height:44px;border-radius:12px;background:rgba(200,16,46,.3);border:1px solid rgba(200,16,46,.4);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🤖</div>
         <div>
@@ -867,14 +661,7 @@ body{background:var(--BG);color:var(--G1);display:flex;flex-direction:column}
           <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:3px;letter-spacing:1px">RPAS OPS · MMG Las Bambas · Solo Coordinador</div>
         </div>
       </div>
-      <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;position:relative">
-        <span style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600;color:rgba(255,255,255,.7)">🚁 Vuelos por zona</span>
-        <span style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600;color:rgba(255,255,255,.7)">⏱ Tiempo de operación</span>
-        <span style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:600;color:rgba(255,255,255,.7)">📊 Tendencias</span>
-      </div>
     </div>
-
-    <!-- Período -->
     <div class="sec"><span>Período de análisis</span><span class="sec-line"></span></div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px" id="periodo-grid">
       <div class="pchip on" onclick="selP(this,'hoy')">Hoy</div>
@@ -882,31 +669,14 @@ body{background:var(--BG);color:var(--G1);display:flex;flex-direction:column}
       <div class="pchip" onclick="selP(this,'mes')">Mes</div>
       <div class="pchip" onclick="selP(this,'todo')">Todo</div>
     </div>
-
-    <!-- Botón generar -->
-    <button class="btn bp bw" id="btn-generar" onclick="generarInforme()" style="margin-bottom:14px">
-      🤖 &nbsp;GENERAR INFORME CON INTELIGENCIA ARTIFICIAL
-    </button>
-
-    <!-- Estado generando -->
+    <button class="btn bp bw" id="btn-generar" onclick="generarInforme()" style="margin-bottom:14px">🤖 &nbsp;GENERAR INFORME CON IA</button>
     <div id="ia-generating" style="display:none;text-align:center;padding:28px;background:var(--W);border:1px solid var(--G5);border-radius:var(--RAD);margin-bottom:14px">
-      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px">
-        <div class="spin" style="border-top-color:var(--R);margin:0"></div>
-        <div style="font-size:13px;font-weight:600;color:var(--G2)">Analizando registros de vuelo…</div>
-      </div>
-      <div id="ia-gen-step" style="font-size:11px;color:var(--G4)">Procesando datos del Google Sheet</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px"><div class="spin" style="border-top-color:var(--R);margin:0"></div><div style="font-size:13px;font-weight:600;color:var(--G2)">Analizando registros…</div></div>
+      <div id="ia-gen-step" style="font-size:11px;color:var(--G4)">Procesando datos</div>
     </div>
-
-    <!-- Resultado -->
     <div id="ia-result-wrap" style="display:none">
-      <div class="sec"><span>Informe generado</span><span class="sec-line"></span>
-        <span style="font-family:var(--MONO);font-size:10px;color:var(--G4)" id="ia-ts"></span>
-      </div>
-
-      <!-- Métricas rápidas (generadas dinámicamente) -->
+      <div class="sec"><span>Informe generado</span><span class="sec-line"></span><span style="font-family:var(--MONO);font-size:10px;color:var(--G4)" id="ia-ts"></span></div>
       <div id="ia-metrics" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:12px"></div>
-
-      <!-- Tabla de zonas -->
       <div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">
         <div style="padding:13px 14px 11px;border-bottom:1px solid var(--G5);display:flex;align-items:center;gap:8px">
           <div class="card-ttl-icon">📍</div>
@@ -914,252 +684,260 @@ body{background:var(--BG);color:var(--G1);display:flex;flex-direction:column}
         </div>
         <div id="ia-zonas-table" style="padding:0"></div>
       </div>
-
-      <!-- Informe textual de IA -->
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-          <div style="display:flex;align-items:center;gap:8px">
-            <div class="card-ttl-icon">🤖</div>
-            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--G3)">Análisis y Recomendaciones</div>
-          </div>
-          <button class="btn bgh" style="padding:6px 11px;font-size:10px;border-radius:6px" onclick="copiarInforme()">📋 Copiar</button>
+          <div style="display:flex;align-items:center;gap:8px"><div class="card-ttl-icon">🤖</div><div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--G3)">Análisis y Recomendaciones</div></div>
+          <button class="btn bgh bsm" onclick="copiarInforme()">📋 Copiar</button>
         </div>
         <div id="ia-texto" style="font-size:13px;line-height:1.85;color:var(--G1)"></div>
       </div>
-
-      <!-- Regenerar -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
         <button class="btn bgh bsm" onclick="generarInforme()">🔄 Regenerar</button>
-        <button class="btn bgh bsm" onclick="copiarInforme()">📋 Copiar informe</button>
+        <button class="btn br bsm" onclick="exportarPDF()">📄 Exportar PDF</button>
       </div>
     </div>
-
     <div style="height:24px"></div>
   </div>
 </div>
 
 </div><!-- /screens -->
 
-<!-- ━━━ MODAL DETALLE ━━━ -->
+<!-- ── MODAL DETALLE ── -->
 <div class="mo" id="modal" onclick="closeMo(event)">
-  <div class="md">
-    <div class="handle"></div>
-    <div class="md-ttl" id="m-ttl"></div>
-    <div id="m-body"></div>
-  </div>
+  <div class="md"><div class="handle"></div><div class="md-ttl" id="m-ttl"></div><div id="m-body"></div></div>
 </div>
-
-<!-- ━━━ MODAL ADMIN ACTION ━━━ -->
+<!-- ── MODAL ADMIN ── -->
 <div class="mo" id="modal2" onclick="document.getElementById('modal2').classList.remove('open')">
-  <div class="md">
+  <div class="md"><div class="handle"></div><div class="md-ttl" id="m2-ttl">Gestionar Plan de Vuelo</div><div id="m2-body"></div></div>
+</div>
+<!-- ── MODAL QR ── -->
+<div class="mo" id="qr-modal" onclick="document.getElementById('qr-modal').classList.remove('open')">
+  <div class="md" id="qr-modal-inner" style="text-align:center" onclick="event.stopPropagation()">
     <div class="handle"></div>
-    <div class="md-ttl" id="m2-ttl">Gestionar Plan de Vuelo</div>
-    <div id="m2-body"></div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--G1);margin-bottom:4px">QR ACCESO RÁPIDO</div>
+    <div style="font-size:12px;color:var(--G3);margin-bottom:14px">Escanea para abrir el Centro de Control directamente</div>
+    <div id="qr-container" style="display:flex;justify-content:center;margin:0 0 14px"></div>
+    <div class="qr-url" id="qr-url-txt"></div>
+    <div class="alert aw" style="text-align:left"><span style="font-size:14px;flex-shrink:0">⚠</span><div style="font-size:11px">Este QR contiene acceso al Centro de Control. No lo compartas públicamente.</div></div>
+    <button class="btn bgh bw" onclick="document.getElementById('qr-modal').classList.remove('open')">Cerrar</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════════
 //  CONFIG
-// ══════════════════════════════════════════════
-const API = 'https://script.google.com/macros/s/AKfycbwLR-vsmrYSqKSiKauKVRZpd_x1zI_WDgcOIiRo5u39DhXT_isWeCuzZ9lyvnrIEYeO/exec';
+// ═══════════════════════════════════════════
+const API = 'https://script.google.com/macros/s/AKfycbzfvJlfrmGi-kln9rD4dfoL2nASIYzwP8I5bW18IRQDM-VNOiWM4c8-77kXGCIiFSMD/exec';
+const MAP_LAT = -14.0548, MAP_LNG = -72.2089;
 
-// MAP LOCATIONS — Google Maps embeds for each zone
-const MAP_LOCS = {
-  mine:   'https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d8000!2d-72.2137!3d-14.0522!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e1!3m2!1ses!2spe!4v1',
-  region: 'https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d40000!2d-72.2137!3d-14.0522!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e1!3m2!1ses!2spe!4v2',
-  ferro:  'https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d3000!2d-72.2137!3d-14.0522!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e1!3m2!1ses!2spe!4v3',
-  chalco: 'https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d3000!2d-72.2050!3d-14.0680!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e1!3m2!1ses!2spe!4v4',
-};
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+let vuelos=[], drone='DJI Matrice M300 RTK', isAdm=false, fe='ALL', clTipo='PRE', iaPeriodo='hoy';
+let _offlineQueue=[], _connOk=false;
+let _chartZonas=null, _chartEstados=null, _chartSemana=null, _chartDrones=null;
 
-// ══ STATE ══
-let vuelos=[], drone='DJI Matrice M300 RTK', isAdm=false, fe='ALL', clTipo='PRE';
+// ═══════════════════════════════════════════
+//  DARK MODE
+// ═══════════════════════════════════════════
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  const next = isDark ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  document.getElementById('btn-theme').textContent = isDark ? '🌙' : '☀️';
+  localStorage.setItem('rpas-theme', next);
+  // update charts colors if visible
+  if(isAdm) setTimeout(renderDash, 100);
+}
 
-// ══ INIT ══
+function applyStoredTheme() {
+  const saved = localStorage.getItem('rpas-theme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+  document.getElementById('btn-theme').textContent = saved === 'dark' ? '☀️' : '🌙';
+}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
+  applyStoredTheme();
   const now = new Date();
   document.getElementById('fecha').value = now.toISOString().split('T')[0];
   const hh = now.getHours().toString().padStart(2,'0');
   const mm = now.getMinutes().toString().padStart(2,'0');
   document.getElementById('hi').value = `${hh}:${mm}`;
   document.getElementById('alt').addEventListener('change', altChg);
-  syncIaAccess();
+  syncAdmAccess();
   ping(); loadVuelos();
   setInterval(loadVuelos, 30000);
+  setInterval(checkConn, 15000);
 });
+window.addEventListener('online',  () => { checkConn(); flushQueue(); });
+window.addEventListener('offline', () => { setConn(false,'SIN RED'); });
 
-// ══ PING ══
-async function ping() {
-  try {
-    const r = await fetch(API+'?action=PING&t='+Date.now());
-    const d = await r.json();
-    setConn(d.ok, d.ok ? 'ONLINE' : 'ERROR');
-  } catch(e) { setConn(false, 'SIN RED'); }
-}
+// ═══════════════════════════════════════════
+//  API + CONEXIÓN
+// ═══════════════════════════════════════════
 function setConn(ok, txt) {
   const p = document.getElementById('pill-conn');
-  const t = document.getElementById('conn-txt');
-  t.textContent = txt;
-  p.className = ok ? 'pill pill-on' : 'pill pill-off';
+  document.getElementById('conn-txt').textContent = txt;
+  p.className = ok ? 'pill pill-on' : (txt==='SIN RED'?'pill pill-off':'pill pill-warn');
+}
+async function ping() { await checkConn(); }
+async function checkConn() {
+  try {
+    const r = await fetch(`${API}?action=PING&t=${Date.now()}`, {redirect:'follow', signal:AbortSignal.timeout(8000)});
+    const d = await r.json();
+    setConn(d.ok, d.ok?'ONLINE':'ERROR');
+  } catch(e) { setConn(false, navigator.onLine?'ERROR':'SIN RED'); }
+}
+async function apiG(p='', retries=2) {
+  for(let i=0;i<=retries;i++){
+    try {
+      const r = await fetch(`${API}?${p}&t=${Date.now()}`, {redirect:'follow', signal:AbortSignal.timeout(10000)});
+      if(!r.ok) throw new Error(r.status);
+      const d = await r.json(); setConn(true,'ONLINE'); return d;
+    } catch(e) {
+      if(i===retries){ setConn(false,'SIN RED'); return {ok:false,error:e.toString()}; }
+      await new Promise(res=>setTimeout(res,800*(i+1)));
+    }
+  }
+}
+async function apiP(body, retries=2) {
+  if(!navigator.onLine){
+    if(body.action==='ADD_VUELO'||body.action==='ADD_CHECKLIST'){
+      _offlineQueue.push(body);
+      toast('Sin red · Solicitud en cola (se enviará al reconectar)','warn');
+      return {ok:false,queued:true};
+    }
+    return {ok:false,error:'Sin conexión'};
+  }
+  for(let i=0;i<=retries;i++){
+    try {
+      const r = await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body),redirect:'follow',signal:AbortSignal.timeout(12000)});
+      if(!r.ok) throw new Error(r.status);
+      const d = await r.json(); setConn(true,'ONLINE'); return d;
+    } catch(e) {
+      if(i===retries){ setConn(false,'SIN RED'); return {ok:false,error:e.toString()}; }
+      await new Promise(res=>setTimeout(res,1000*(i+1)));
+    }
+  }
+}
+async function flushQueue() {
+  if(!_offlineQueue.length) return;
+  toast(`Reconectado · Enviando ${_offlineQueue.length} solicitud(es) pendiente(s)…`,'inf');
+  const pending=[..._offlineQueue]; _offlineQueue=[];
+  for(const body of pending){ const r=await apiP(body,1); if(!r.ok&&!r.queued) _offlineQueue.push(body); }
+  if(!_offlineQueue.length){ toast('Todas las solicitudes sincronizadas ✓','ok'); await loadVuelos(); }
 }
 
-// ══ API ══
-async function apiG(p='') {
-  try {
-    const r = await fetch(`${API}?${p}&t=${Date.now()}`, {redirect:'follow'});
-    if(!r.ok) throw new Error(r.status);
-    return await r.json();
-  } catch(e) { return {ok:false, error:e.toString()}; }
-}
-async function apiP(body) {
-  try {
-    const r = await fetch(API, {
-      method:'POST',
-      headers:{'Content-Type':'text/plain'},
-      body: JSON.stringify(body),
-      redirect:'follow'
-    });
-    if(!r.ok) throw new Error(r.status);
-    return await r.json();
-  } catch(e) { return {ok:false, error:e.toString()}; }
-}
-
-// ══ LOAD ══
+// ═══════════════════════════════════════════
+//  LOAD
+// ═══════════════════════════════════════════
 async function loadVuelos(adm) {
   const d = await apiG('action=GET_VUELOS');
   if(d.ok) {
     vuelos = (d.vuelos||[]).sort((a,b)=>(b.TIMESTAMP||'').localeCompare(a.TIMESTAMP||''));
     const pend = vuelos.filter(v=>v.ESTADO==='PENDIENTE').length;
     const nb = document.getElementById('tb-pend');
-    nb.style.display = pend ? 'flex' : 'none'; nb.textContent = pend;
+    nb.style.display = pend?'flex':'none'; nb.textContent = pend;
     const t = new Date().toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'});
     document.getElementById('sync-lbl').textContent = `Actualizado ${t} · ${vuelos.length} registros`;
-    setConn(true, 'ONLINE'); renderVuelos(); updCLSel();
-    if(isAdm||adm) { renderAdm(); updStats(); }
+    setConn(true,'ONLINE'); renderVuelos(); updCLSel();
+    if(isAdm||adm){ renderAdm(); updStats(); }
+    if(isAdm && document.getElementById('s-dash').classList.contains('on')) renderDash();
   } else {
-    setConn(false, 'SIN CONEXIÓN');
+    setConn(false,'SIN CONEXIÓN');
     document.getElementById('sync-lbl').textContent = 'Sin conexión con el servidor';
   }
 }
 
-// ══ TABS ══
+// ═══════════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════════
 function goTab(tab, btn) {
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.getElementById('s-'+tab).classList.add('on');
   if(btn) btn.classList.add('on');
-  else { const m={plan:'t0',vuelos:'t1',checklist:'t2',mapa:'t3',control:'t4',ia:'t5'}; const el=document.getElementById(m[tab]); if(el)el.classList.add('on'); }
+  else { const m={plan:'t0',vuelos:'t1',checklist:'t2',mapa:'t3',control:'t4',dash:'t5',ia:'t6'}; const el=document.getElementById(m[tab]); if(el)el.classList.add('on'); }
   if(tab==='vuelos') loadVuelos();
-  if(tab==='control' && isAdm) renderAdm();
-  if(tab==='mapa') setTimeout(()=>setMapLoc('mine'),50);
+  if(tab==='control'&&isAdm) renderAdm();
+  if(tab==='dash') { if(isAdm){ document.getElementById('dash-lock').style.display='none'; document.getElementById('dash-panel').style.display='block'; renderDash(); } else { document.getElementById('dash-lock').style.display='block'; document.getElementById('dash-panel').style.display='none'; } }
 }
 
-// ══ FORM ══
-function lugarChg() { document.getElementById('otro-w').style.display = document.getElementById('lugar').value==='OTRO'?'block':'none'; }
-function empresaChg() { document.getElementById('contra-w').style.display = document.getElementById('empresa').value==='CONTRATISTA'?'block':'none'; }
-function altChg() { document.getElementById('alt-otro-w').style.display = document.getElementById('alt').value==='otro'?'block':'none'; }
-function selDrone(el, name) { document.querySelectorAll('.drone-card').forEach(c=>c.classList.remove('on')); el.classList.add('on'); drone = name; }
-function getAlt() { const v=document.getElementById('alt').value; return v==='otro'?document.getElementById('alt-otro').value:v; }
-function getLugar() { const v=document.getElementById('lugar').value; return v==='OTRO'?document.getElementById('lugar-o').value.toUpperCase():v; }
-function getEmp() { const v=document.getElementById('empresa').value; return v==='CONTRATISTA'?(document.getElementById('contra-n').value||'EMPRESA CONTRATISTA'):v; }
+// ═══════════════════════════════════════════
+//  FORM HELPERS
+// ═══════════════════════════════════════════
+function lugarChg(){ document.getElementById('otro-w').style.display=document.getElementById('lugar').value==='OTRO'?'block':'none'; }
+function empresaChg(){ document.getElementById('contra-w').style.display=document.getElementById('empresa').value==='CONTRATISTA'?'block':'none'; }
+function altChg(){ document.getElementById('alt-otro-w').style.display=document.getElementById('alt').value==='otro'?'block':'none'; }
+function selDrone(el,name){ document.querySelectorAll('.drone-card').forEach(c=>c.classList.remove('on')); el.classList.add('on'); drone=name; }
+function getAlt(){ const v=document.getElementById('alt').value; return v==='otro'?document.getElementById('alt-otro').value:v; }
+function getLugar(){ const v=document.getElementById('lugar').value; return v==='OTRO'?document.getElementById('lugar-o').value.toUpperCase():v; }
+function getEmp(){ const v=document.getElementById('empresa').value; return v==='CONTRATISTA'?(document.getElementById('contra-n').value||'EMPRESA CONTRATISTA'):v; }
 
-// ══ SUBMIT ══
+// ═══════════════════════════════════════════
+//  SUBMIT VUELO
+// ═══════════════════════════════════════════
 async function submitVuelo() {
-  const lugar = getLugar();
-  if(!lugar) { toast('Selecciona el lugar de operación','warn'); return; }
-  if(!document.getElementById('p1').value.trim()) { toast('Ingresa el nombre del piloto','warn'); return; }
-  if(!document.getElementById('serie').value.trim()) { toast('Ingresa el número de serie del RPA','warn'); return; }
-  const btn = document.getElementById('btn-reg');
-  btn.disabled = true; btn.textContent = 'ENVIANDO SOLICITUD…';
-
-  const vuelo = {
-    lugar, cuadrante: document.getElementById('cuadrante').value,
-    fecha: document.getElementById('fecha').value,
-    horaInicio: document.getElementById('hi').value, horaFin: document.getElementById('hf').value,
-    altura: getAlt(), rpaMod: drone, rpaSerie: document.getElementById('serie').value,
-    mision: document.getElementById('mision').value,
-    piloto1: document.getElementById('p1').value, dni1: document.getElementById('d1').value,
-    codPiloto1: document.getElementById('cod1').value, piloto2: document.getElementById('p2').value,
-    dni2: document.getElementById('d2').value, celular: document.getElementById('cel').value,
-    empresa: getEmp(), gerencia: document.getElementById('gerencia').value,
+  const lugar=getLugar();
+  if(!lugar){ toast('Selecciona el lugar de operación','warn'); return; }
+  if(!document.getElementById('p1').value.trim()){ toast('Ingresa el nombre del piloto','warn'); return; }
+  if(!document.getElementById('serie').value.trim()){ toast('Ingresa el número de serie del RPA','warn'); return; }
+  const btn=document.getElementById('btn-reg');
+  btn.disabled=true; btn.textContent='📡 CONECTANDO CON LA NUBE…';
+  const vuelo={
+    lugar, cuadrante:document.getElementById('cuadrante').value,
+    fecha:document.getElementById('fecha').value,
+    horaInicio:document.getElementById('hi').value, horaFin:document.getElementById('hf').value,
+    altura:getAlt(), rpaMod:drone, rpaSerie:document.getElementById('serie').value,
+    mision:document.getElementById('mision').value,
+    piloto1:document.getElementById('p1').value, dni1:document.getElementById('d1').value,
+    codPiloto1:document.getElementById('cod1').value, piloto2:document.getElementById('p2').value,
+    dni2:document.getElementById('d2').value, celular:document.getElementById('cel').value,
+    empresa:getEmp(), gerencia:document.getElementById('gerencia').value,
     lat:'', lng:'', zonaGeo:'', checklistOk:'NO'
   };
-
-  const r = await apiP({action:'ADD_VUELO', vuelo});
-  btn.disabled = false; btn.innerHTML = '✈ ENVIAR SOLICITUD AL CENTRO DE CONTROL';
-
-  if(r.ok) {
-    toast('Solicitud enviada correctamente','ok');
+  btn.textContent='☁ GUARDANDO EN LA NUBE…';
+  const r=await apiP({action:'ADD_VUELO',vuelo});
+  btn.disabled=false; btn.innerHTML='✈ ENVIAR SOLICITUD AL CENTRO DE CONTROL';
+  if(r.ok){
+    toast('✅ Guardado en Google Sheets correctamente','ok');
     await loadVuelos();
-    setTimeout(()=>{
-      if(confirm('✅ Solicitud registrada.\n\n¿Deseas completar el Check List ahora?')) {
-        goTab('checklist');
-        const sel = document.getElementById('cl-vuelo');
-        for(let o of sel.options) if(o.value===r.id) { sel.value=r.id; break; }
-      }
-    }, 400);
-  } else {
-    toast('Error al enviar: '+(r.error||'Sin conexión'),'err');
-  }
+    setTimeout(()=>{ if(confirm('✅ Solicitud registrada en la nube.\n\n¿Deseas completar el Check List ahora?')){ goTab('checklist'); const sel=document.getElementById('cl-vuelo'); for(let o of sel.options) if(o.value===r.id){sel.value=r.id;break;} }},400);
+  } else if(r.queued){ toast('Sin red · Solicitud en cola (se enviará al reconectar)','warn');
+  } else { toast('❌ Error al guardar: '+(r.error||'Sin conexión'),'err'); }
 }
 
-// ══ VUELOS ══
-function filt(e, btn) { fe=e; document.querySelectorAll('#f-row .ftag').forEach(b=>b.classList.remove('on')); if(btn)btn.classList.add('on'); renderVuelos(); }
-function stKey(e) { return {PENDIENTE:'P',APROBADO:'A',OBSERVADO:'O',DENEGADO:'D',CONCLUIDO:'C'}[e]||'P'; }
-
-function renderVuelos() {
-  const el = document.getElementById('vuelos-list');
-  const list = fe==='ALL' ? vuelos : vuelos.filter(v=>v.ESTADO===fe);
-  if(!list.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📡</div><div class="empty-txt">Sin registros${fe!=='ALL'?' · Estado: '+fe:''}</div><div class="empty-sub">Los vuelos aparecerán aquí cuando sean enviados</div></div>`;
-    return;
-  }
-  el.innerHTML = list.map(v => {
-    const e = v.ESTADO||'PENDIENTE', k = stKey(e);
-    return `<div class="vc" onclick="openModal('${v.ID}')">
-      <div class="vst ${e}"></div>
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:4px">
-        <div>
-          <div class="v-place">${v.LUGAR||''}</div>
-          ${v.CUADRANTE?`<div class="v-quad">📐 ${v.CUADRANTE}</div>`:''}
-          ${v.CODIGO_AUTH?`<div class="v-auth">✅ ${v.CODIGO_AUTH}</div>`:''}
-        </div>
-        <span class="sc sc${k}">${e}</span>
-      </div>
-      <div class="v-meta">
-        <span>📅 <strong>${fd(v.FECHA)}</strong></span>
-        <span>⏰ <strong>${v.HORA_INICIO||'--'} → ${v.HORA_FIN||'--'}</strong></span>
-        <span>🚁 <strong>${shortDrone(v.RPA_MODELO)}</strong></span>
-        <span>📏 <strong>${v.ALTURA?v.ALTURA+' m':'--'}</strong></span>
-      </div>
-      <div class="v-foot">
-        <span style="font-size:11px;color:var(--G3);font-weight:500">✈ ${v.PILOTO1||''}${v.PILOTO2?' · '+v.PILOTO2:''}</span>
-        <span style="font-size:10px;color:var(--G4)">${v.GERENCIA||''} ${v.CHECKLIST_OK==='SI'?'<span style="color:var(--GRN);font-weight:700">· CL✓</span>':''}</span>
-      </div>
-    </div>`;
-  }).join('');
+// ═══════════════════════════════════════════
+//  VUELOS LIST
+// ═══════════════════════════════════════════
+function filt(e,btn){ fe=e; document.querySelectorAll('#f-row .ftag').forEach(b=>b.classList.remove('on')); if(btn)btn.classList.add('on'); renderVuelos(); }
+function stKey(e){ return {PENDIENTE:'P',APROBADO:'A',OBSERVADO:'O',DENEGADO:'D',CONCLUIDO:'C'}[e]||'P'; }
+function renderVuelos(){
+  const el=document.getElementById('vuelos-list');
+  const list=fe==='ALL'?vuelos:vuelos.filter(v=>v.ESTADO===fe);
+  if(!list.length){ el.innerHTML=`<div class="empty-state"><div class="empty-icon">📡</div><div class="empty-txt">Sin registros${fe!=='ALL'?' · Estado: '+fe:''}</div><div class="empty-sub">Los vuelos aparecerán aquí cuando sean enviados</div></div>`; return; }
+  el.innerHTML=list.map(v=>{ const e=v.ESTADO||'PENDIENTE',k=stKey(e); return `<div class="vc" onclick="openModal('${v.ID}')"><div class="vst ${e}"></div><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:4px"><div><div class="v-place">${v.LUGAR||''}</div>${v.CUADRANTE?`<div class="v-quad">📐 ${v.CUADRANTE}</div>`:''} ${v.CODIGO_AUTH?`<div class="v-auth">✅ ${v.CODIGO_AUTH}</div>`:''}</div><span class="sc sc${k}">${e}</span></div><div class="v-meta"><span>📅 <strong>${fd(v.FECHA)}</strong></span><span>⏰ <strong>${v.HORA_INICIO||'--'} → ${v.HORA_FIN||'--'}</strong></span><span>🚁 <strong>${shortDrone(v.RPA_MODELO)}</strong></span><span>📏 <strong>${v.ALTURA?v.ALTURA+' m':'--'}</strong></span></div><div class="v-foot"><span style="font-size:11px;color:var(--G3);font-weight:500">✈ ${v.PILOTO1||''}${v.PILOTO2?' · '+v.PILOTO2:''}</span><span style="font-size:10px;color:var(--G4)">${v.GERENCIA||''} ${v.CHECKLIST_OK==='SI'?'<span style="color:var(--GRN);font-weight:700">· CL✓</span>':''}</span></div></div>`; }).join('');
 }
-function shortDrone(s) { return (s||'--').replace('DJI ','').split(' ').slice(0,2).join(' '); }
+function shortDrone(s){ return (s||'--').replace('DJI ','').split(' ').slice(0,2).join(' '); }
 
-// ══ CHECKLIST ══
-function selCLT(el, t) {
-  ['cl-pre','cl-post'].forEach(id=>document.getElementById(id).classList.remove('on'));
-  el.classList.add('on'); clTipo=t;
-}
-function togCL(btn) { btn.classList.toggle('on'); }
-function updCLSel() {
+// ═══════════════════════════════════════════
+//  CHECKLIST
+// ═══════════════════════════════════════════
+function selCLT(el,t){ ['cl-pre','cl-post'].forEach(id=>document.getElementById(id).classList.remove('on')); el.classList.add('on'); clTipo=t; }
+function togCL(btn){ btn.classList.toggle('on'); }
+function updCLSel(){
   const sel=document.getElementById('cl-vuelo'), cur=sel.value;
   sel.innerHTML='<option value="">— Seleccionar vuelo —</option>';
-  vuelos.filter(v=>['PENDIENTE','APROBADO'].includes(v.ESTADO)).forEach(v=>{
-    const o=document.createElement('option'); o.value=v.ID;
-    o.textContent=`${fd(v.FECHA)} · ${v.LUGAR||''} · ${v.PILOTO1||''} [${v.ESTADO}]`;
-    sel.appendChild(o);
-  });
+  vuelos.filter(v=>['PENDIENTE','APROBADO'].includes(v.ESTADO)).forEach(v=>{ const o=document.createElement('option'); o.value=v.ID; o.textContent=`${fd(v.FECHA)} · ${v.LUGAR||''} · ${v.PILOTO1||''} [${v.ESTADO}]`; sel.appendChild(o); });
   if(cur) sel.value=cur;
 }
-async function submitCL() {
+async function submitCL(){
   const vId=document.getElementById('cl-vuelo').value;
   if(!vId){toast('Selecciona el vuelo','warn');return;}
   const v=vuelos.find(x=>x.ID===vId);
@@ -1172,22 +950,10 @@ async function submitCL() {
   else toast('Error: '+(r.error||'Sin conexión'),'err');
 }
 
-// ══ MAP ══
-const mapKeys = { mine:'mb-los', region:'mb-reg', ferro:'mb-fer', chalco:'mb-cha' };
-function setMapLoc(key) {
-  Object.values(mapKeys).forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('on');});
-  const btnId = mapKeys[key]; if(btnId){const el=document.getElementById(btnId);if(el)el.classList.add('on');}
-  document.getElementById('map-frame').src = MAP_LOCS[key]||MAP_LOCS.mine;
-  const labels={mine:'Operación Minera · Las Bambas',region:'Vista regional · Cotabambas · Apurímac',ferro:'Tajo Ferrobamba · Área de vuelo',chalco:'Tajo Chalcobamba · Área de vuelo'};
-  document.getElementById('map-hint').textContent = labels[key]||'';
-}
-function loadMapVuelos() {
-  const aprobados = vuelos.filter(v=>v.ESTADO==='APROBADO');
-  toast(aprobados.length?`${aprobados.length} vuelos aprobados activos`:'Sin vuelos aprobados activos','inf');
-}
-
-// ══ ADMIN ══
-function admLogin() {
+// ═══════════════════════════════════════════
+//  ADMIN
+// ═══════════════════════════════════════════
+function admLogin(){
   const p=document.getElementById('adm-pass').value;
   if(!p){toast('Ingresa la contraseña','warn');return;}
   sessionStorage.setItem('ap',p); isAdm=true;
@@ -1195,53 +961,37 @@ function admLogin() {
   document.getElementById('adm-panel').style.display='block';
   document.getElementById('btn-lock').className='btn-lock on';
   document.getElementById('btn-lock').textContent='🔓 Control';
-  syncIaAccess();
-  toast('Acceso autorizado','ok'); loadVuelos(true);
+  syncAdmAccess(); toast('Acceso autorizado','ok'); loadVuelos(true);
 }
-function admOut() {
+function admOut(){
   isAdm=false; sessionStorage.removeItem('ap');
   document.getElementById('gate-section').style.display='block';
   document.getElementById('adm-panel').style.display='none';
   document.getElementById('adm-pass').value='';
   document.getElementById('btn-lock').className='btn-lock';
   document.getElementById('btn-lock').textContent='🔒 Control';
-  syncIaAccess();
-  // Si está en pestaña IA, redirigir a Plan
-  if(document.getElementById('s-ia').classList.contains('on')) goTab('plan');
+  syncAdmAccess();
+  if(document.getElementById('s-ia').classList.contains('on')||document.getElementById('s-dash').classList.contains('on')) goTab('plan');
   toast('Sesión cerrada','inf');
 }
-function updStats() {
+function updStats(){
   document.getElementById('s-tot').textContent=vuelos.length;
   document.getElementById('s-pen').textContent=vuelos.filter(v=>v.ESTADO==='PENDIENTE').length;
   document.getElementById('s-apr').textContent=vuelos.filter(v=>v.ESTADO==='APROBADO').length;
   document.getElementById('s-den').textContent=vuelos.filter(v=>['DENEGADO','CONCLUIDO'].includes(v.ESTADO)).length;
 }
-function renderAdm() {
+function syncAdmAccess(){
+  const t5=document.getElementById('t5'), t6=document.getElementById('t6');
+  if(isAdm){ t5.style.display=''; t6.style.display=''; document.getElementById('ia-lock').style.display='none'; document.getElementById('ia-panel').style.display='block';
+  } else { t5.style.display='none'; t6.style.display='none'; document.getElementById('ia-lock').style.display='block'; document.getElementById('ia-panel').style.display='none'; }
+}
+function renderAdm(){
   const el=document.getElementById('adm-list'); updStats();
   document.getElementById('adm-lbl').textContent=`${vuelos.length} vuelos · ${vuelos.filter(v=>v.ESTADO==='PENDIENTE').length} pendientes`;
   if(!vuelos.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-txt">Sin vuelos registrados</div></div>`;return;}
-  el.innerHTML=vuelos.map(v=>{
-    const e=v.ESTADO||'PENDIENTE', k=stKey(e);
-    return`<div class="vc" onclick="openAdm('${v.ID}')">
-      <div class="vst ${e}"></div>
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:4px">
-        <div>
-          <div class="v-place">${v.LUGAR||''}</div>
-          <div class="v-quad">${v.PILOTO1||''} · DNI ${v.DNI1||'--'}</div>
-          ${v.CODIGO_AUTH?`<div class="v-auth">✅ ${v.CODIGO_AUTH}</div>`:''}
-        </div>
-        <span class="sc sc${k}">${e}</span>
-      </div>
-      <div class="v-meta">
-        <span>📅 <strong>${fd(v.FECHA)}</strong></span>
-        <span>⏰ <strong>${v.HORA_INICIO||'--'}→${v.HORA_FIN||'--'}</strong></span>
-        <span>🚁 <strong>${shortDrone(v.RPA_MODELO)}</strong></span>
-        <span>CL: <strong style="color:${v.CHECKLIST_OK==='SI'?'var(--GRN)':'var(--R)'}">${v.CHECKLIST_OK||'NO'}</strong></span>
-      </div>
-    </div>`;
-  }).join('');
+  el.innerHTML=vuelos.map(v=>{ const e=v.ESTADO||'PENDIENTE',k=stKey(e); return`<div class="vc" onclick="openAdm('${v.ID}')"><div class="vst ${e}"></div><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:4px"><div><div class="v-place">${v.LUGAR||''}</div><div class="v-quad">${v.PILOTO1||''} · DNI ${v.DNI1||'--'}</div>${v.CODIGO_AUTH?`<div class="v-auth">✅ ${v.CODIGO_AUTH}</div>`:''}</div><span class="sc sc${k}">${e}</span></div><div class="v-meta"><span>📅 <strong>${fd(v.FECHA)}</strong></span><span>⏰ <strong>${v.HORA_INICIO||'--'}→${v.HORA_FIN||'--'}</strong></span><span>🚁 <strong>${shortDrone(v.RPA_MODELO)}</strong></span><span>CL: <strong style="color:${v.CHECKLIST_OK==='SI'?'var(--GRN)':'var(--R)'}">${v.CHECKLIST_OK||'NO'}</strong></span></div></div>`; }).join('');
 }
-function openAdm(id) {
+function openAdm(id){
   const v=vuelos.find(x=>x.ID===id); if(!v) return;
   const e=v.ESTADO||'PENDIENTE';
   document.getElementById('m2-ttl').innerHTML=`<span>${v.LUGAR||''}</span>`;
@@ -1250,7 +1000,7 @@ function openAdm(id) {
       <span style="font-size:15px;flex-shrink:0">📋</span>
       <div><strong>${v.PILOTO1||''}${v.PILOTO2?' · '+v.PILOTO2:''}</strong><br>
       DNI: ${v.DNI1||'--'} · Cód: ${v.COD_PILOTO1||'--'} · 📱 ${v.CELULAR||'--'}<br>
-      RPA: ${v.RPA_MODELO||''}<br>Serie: ${v.RPA_SERIE||'--'}<br>
+      RPA: ${v.RPA_MODELO||''} · S/N: ${v.RPA_SERIE||'--'}<br>
       Misión: ${v.MISION||''} · Altura: ${v.ALTURA||'--'} m<br>
       ${v.CUADRANTE?'Cuadrante: '+v.CUADRANTE+'<br>':''}
       ${v.EMPRESA||''} · ${v.GERENCIA||''}<br>
@@ -1266,287 +1016,336 @@ function openAdm(id) {
         <button class="btn" style="background:#FFFBEB;border:1.5px solid #FDE68A;color:#92400E;font-family:var(--FONT);font-size:13px;font-weight:700;letter-spacing:.5px;cursor:pointer;padding:13px;text-transform:uppercase;border-radius:var(--RAD2);transition:all .2s" onclick="admAct('OBSERVADO','${id}')">👁 OBSERVAR</button>
         <button class="btn br" onclick="admAct('DENEGADO','${id}')" style="grid-column:span 2">❌ DENEGAR VUELO</button>
       `:''}
-      ${e==='APROBADO'?`<button class="btn bgh" onclick="admAct('CONCLUIDO','${id}')" style="grid-column:span 2">☑ MARCAR CONCLUIDO</button>`:''}
+      ${e==='APROBADO'?`<button class="btn bg" onclick="admAct('CONCLUIDO','${id}')" style="grid-column:span 2">☑ MARCAR CONCLUIDO</button>`:''}
     </div>
-    <div style="margin-top:9px">
-      <button class="btn br bw bsm" onclick="admDel('${id}')">🗑 Eliminar registro</button>
-    </div>`;
+    <div style="margin-top:9px"><button class="btn bgh bsm" onclick="admDel('${id}')">🗑 Eliminar registro</button></div>`;
   document.getElementById('modal2').classList.add('open');
 }
-async function admAct(estado, id) {
+async function admAct(estado,id){
   const p=sessionStorage.getItem('ap'); if(!p){toast('Sesión expirada','err');admOut();return;}
   const cod=document.getElementById('ma-cod')?.value||'';
   const obs=document.getElementById('ma-obs')?.value||'';
   const codigoAuth=estado==='APROBADO'?(cod||genCod()):cod;
   toast('Procesando…','inf');
   const r=await apiP({action:'UPD_ESTADO',id,password:p,estado,observacion:obs,codigoAuth});
-  if(r.ok){
-    const msgs={APROBADO:'Vuelo aprobado correctamente',OBSERVADO:'Vuelo marcado como observado',DENEGADO:'Vuelo denegado',CONCLUIDO:'Vuelo concluido'};
-    toast(msgs[estado]||'Actualizado','ok');
-    document.getElementById('modal2').classList.remove('open');
-    await loadVuelos(true);
-  } else {
-    if(r.error==='Contraseña incorrecta'){toast('Contraseña incorrecta','err');admOut();}
-    else toast('Error: '+(r.error||''),'err');
-  }
+  if(r.ok){ const msgs={APROBADO:'Vuelo aprobado',OBSERVADO:'Marcado como observado',DENEGADO:'Vuelo denegado',CONCLUIDO:'Vuelo concluido'}; toast(msgs[estado]||'Actualizado','ok'); document.getElementById('modal2').classList.remove('open'); await loadVuelos(true);
+  } else { if(r.error==='Contraseña incorrecta'){toast('Contraseña incorrecta','err');admOut();} else toast('Error: '+(r.error||''),'err'); }
 }
-async function admDel(id) {
-  if(!confirm('¿Eliminar este registro del sistema?')) return;
-  const p=sessionStorage.getItem('ap');
-  const r=await apiP({action:'DEL_VUELO',id,password:p});
+async function admDel(id){
+  if(!confirm('¿Eliminar este registro?')) return;
+  const r=await apiP({action:'DEL_VUELO',id,password:sessionStorage.getItem('ap')});
   if(r.ok){toast('Registro eliminado','ok');document.getElementById('modal2').classList.remove('open');await loadVuelos(true);}
   else toast('Error: '+(r.error||''),'err');
 }
-async function delAll() {
+async function delAll(){
   if(!confirm('⚠ ¿Borrar TODOS los registros?\n\nEsta acción no puede deshacerse.')) return;
-  const p=sessionStorage.getItem('ap'); toast('Borrando registros…','inf');
+  const p=sessionStorage.getItem('ap'); toast('Borrando…','inf');
   for(const v of [...vuelos]) await apiP({action:'DEL_VUELO',id:v.ID,password:p});
   toast('Todos los registros eliminados','ok'); await loadVuelos(true);
 }
 function genCod(){const d=new Date();return`AUTH-${d.getFullYear().toString().slice(2)}${(d.getMonth()+1).toString().padStart(2,'0')}${d.getDate().toString().padStart(2,'0')}-${Math.floor(Math.random()*900+100)}`;}
 
-// ══ MODAL ══
-function openModal(id) {
+// ═══════════════════════════════════════════
+//  QR DE ACCESO RÁPIDO
+// ═══════════════════════════════════════════
+function showQR() {
+  const container = document.getElementById('qr-container');
+  container.innerHTML = '';
+  const url = window.location.href.split('#')[0] + '#control-auto';
+  document.getElementById('qr-url-txt').textContent = url;
+  try {
+    new QRCode(container, { text: url, width: 200, height: 200, colorDark: '#1A1D23', colorLight: '#FFFFFF', correctLevel: QRCode.CorrectLevel.M });
+  } catch(e) {
+    container.innerHTML = `<div style="padding:20px;background:var(--BG);border-radius:var(--RAD2);font-size:11px;color:var(--G3);word-break:break-all">${url}</div>`;
+  }
+  document.getElementById('qr-modal').classList.add('open');
+}
+
+// ═══════════════════════════════════════════
+//  DASHBOARD KPIs
+// ═══════════════════════════════════════════
+function getChartDefaults() {
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  return {
+    gridColor: dark ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.06)',
+    labelColor: dark ? '#8B919E' : '#6B7280',
+    tickColor: dark ? '#5A6170' : '#9CA3AF',
+  };
+}
+
+function destroyCharts() {
+  [_chartZonas, _chartEstados, _chartSemana, _chartDrones].forEach(c => { if(c) c.destroy(); });
+  _chartZonas=_chartEstados=_chartSemana=_chartDrones=null;
+}
+
+function renderDash() {
+  if(!isAdm) return;
+  const d = getChartDefaults();
+
+  // ── KPIs rápidos ──
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const hoyVuelos = vuelos.filter(v=>{ if(!v.FECHA) return false; return new Date(v.FECHA+'T00:00:00').toDateString()===hoy.toDateString(); });
+  const total = vuelos.length;
+  const pend = vuelos.filter(v=>v.ESTADO==='PENDIENTE').length;
+  const apr = vuelos.filter(v=>['APROBADO','CONCLUIDO'].includes(v.ESTADO)).length;
+  const tasa = total ? Math.round(apr/total*100) : 0;
+  const minsHoy = hoyVuelos.reduce((s,v)=>s+calcMins(v.HORA_INICIO,v.HORA_FIN),0);
+
+  document.getElementById('d-tot').textContent = total;
+  document.getElementById('d-tot-sub').textContent = `${hoyVuelos.length} hoy`;
+  document.getElementById('d-pen').textContent = pend;
+  document.getElementById('d-apr').textContent = apr;
+  document.getElementById('d-tasa').textContent = `Tasa ${tasa}%`;
+  document.getElementById('d-mins').textContent = fmtMins(minsHoy)||'0 min';
+
+  destroyCharts();
+
+  Chart.defaults.color = d.labelColor;
+  Chart.defaults.borderColor = d.gridColor;
+
+  // ── Chart 1: Vuelos por Zona (barras horizontales) ──
+  const zonaMap={};
+  vuelos.forEach(v=>{ const z=v.LUGAR||'Sin especificar'; zonaMap[z]=(zonaMap[z]||0)+1; });
+  const zonas=Object.entries(zonaMap).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  _chartZonas = new Chart(document.getElementById('ch-zonas'), {
+    type:'bar',
+    data:{ labels:zonas.map(([z])=>z.replace('TAJO ','').replace('BOTADERO ','BOT. ')), datasets:[{data:zonas.map(([,n])=>n), backgroundColor:'rgba(200,16,46,.75)', borderRadius:4, borderSkipped:false}]},
+    options:{ indexAxis:'y', responsive:true, plugins:{legend:{display:false}}, scales:{ x:{ticks:{color:d.tickColor},grid:{color:d.gridColor}}, y:{ticks:{color:d.tickColor,font:{size:10}},grid:{display:false}} } }
+  });
+
+  // ── Chart 2: Estados (dona) ──
+  const estados={PENDIENTE:0,APROBADO:0,OBSERVADO:0,DENEGADO:0,CONCLUIDO:0};
+  vuelos.forEach(v=>{ if(estados[v.ESTADO]!==undefined) estados[v.ESTADO]++; });
+  const estLabels=Object.keys(estados).filter(k=>estados[k]>0);
+  const estColors={'PENDIENTE':'#F59E0B','APROBADO':'#00875A','OBSERVADO':'#EA580C','DENEGADO':'#C8102E','CONCLUIDO':'#9CA3AF'};
+  _chartEstados = new Chart(document.getElementById('ch-estados'), {
+    type:'doughnut',
+    data:{ labels:estLabels, datasets:[{data:estLabels.map(k=>estados[k]), backgroundColor:estLabels.map(k=>estColors[k]), borderWidth:2, borderColor:document.documentElement.getAttribute('data-theme')==='dark'?'#1E2129':'#fff'}]},
+    options:{ responsive:true, plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:10,color:d.labelColor}}} }
+  });
+
+  // ── Chart 3: Actividad últimos 7 días ──
+  const semana=[];
+  for(let i=6;i>=0;i--){ const d2=new Date(hoy); d2.setDate(hoy.getDate()-i); semana.push(d2); }
+  const semanaLabels=semana.map(d2=>d2.toLocaleDateString('es-PE',{weekday:'short',day:'numeric'}));
+  const semanadatos=semana.map(d2=>vuelos.filter(v=>{ if(!v.FECHA) return false; return new Date(v.FECHA+'T00:00:00').toDateString()===d2.toDateString(); }).length);
+  _chartSemana = new Chart(document.getElementById('ch-semana'), {
+    type:'line',
+    data:{ labels:semanaLabels, datasets:[{data:semanadatos,borderColor:'#C8102E',backgroundColor:'rgba(200,16,46,.12)',fill:true,tension:.4,pointBackgroundColor:'#C8102E',pointRadius:4}]},
+    options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ x:{ticks:{color:d.tickColor,font:{size:10}},grid:{color:d.gridColor}}, y:{ticks:{color:d.tickColor,stepSize:1},grid:{color:d.gridColor}} } }
+  });
+
+  // ── Chart 4: Uso de aeronaves (dona) ──
+  const droneMap={};
+  vuelos.forEach(v=>{ const dr=shortDrone(v.RPA_MODELO)||'Otro'; droneMap[dr]=(droneMap[dr]||0)+1; });
+  const drEntries=Object.entries(droneMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const drColors=['#C8102E','#2563EB','#00875A','#F59E0B','#EA580C','#8B5CF6'];
+  _chartDrones = new Chart(document.getElementById('ch-drones'), {
+    type:'doughnut',
+    data:{ labels:drEntries.map(([l])=>l), datasets:[{data:drEntries.map(([,n])=>n), backgroundColor:drColors.slice(0,drEntries.length), borderWidth:2, borderColor:document.documentElement.getAttribute('data-theme')==='dark'?'#1E2129':'#fff'}]},
+    options:{ responsive:true, plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:10,color:d.labelColor}}} }
+  });
+}
+
+// ═══════════════════════════════════════════
+//  MODAL DETALLE
+// ═══════════════════════════════════════════
+function openModal(id){
   const v=vuelos.find(x=>x.ID===id); if(!v) return;
-  const e=v.ESTADO||'PENDIENTE', k=stKey(e);
-  const steps=[
-    {l:'Enviado',i:'📤',d:true},
-    {l:'Revisión',i:'🔍',d:['APROBADO','OBSERVADO','DENEGADO','CONCLUIDO'].includes(e)},
-    {l:e==='DENEGADO'?'Denegado':'Aprobado',i:e==='DENEGADO'?'❌':'✅',d:['APROBADO','CONCLUIDO'].includes(e),rej:e==='DENEGADO'},
-    {l:'Checklist',i:'📋',d:v.CHECKLIST_OK==='SI'},
-    {l:'Concluido',i:'🏁',d:e==='CONCLUIDO'}
-  ];
+  const e=v.ESTADO||'PENDIENTE',k=stKey(e);
+  const steps=[{l:'Enviado',i:'📤',d:true},{l:'Revisión',i:'🔍',d:['APROBADO','OBSERVADO','DENEGADO','CONCLUIDO'].includes(e)},{l:e==='DENEGADO'?'Denegado':'Aprobado',i:e==='DENEGADO'?'❌':'✅',d:['APROBADO','CONCLUIDO'].includes(e),rej:e==='DENEGADO'},{l:'Checklist',i:'📋',d:v.CHECKLIST_OK==='SI'},{l:'Concluido',i:'🏁',d:e==='CONCLUIDO'}];
   const flow=`<div class="flow">${steps.map((s,i)=>`${i>0?`<div class="fl-line ${s.d?'done':''}"></div>`:''}<div class="fl-s"><div class="fl-d ${s.d?'done':s.rej?'rej':i===1&&e==='PENDIENTE'?'act':''}">${s.i}</div><div class="fl-l">${s.l}</div></div>`).join('')}</div>`;
   document.getElementById('m-ttl').innerHTML=`<span>${v.LUGAR||'Vuelo'}</span>`;
-  document.getElementById('m-body').innerHTML=`
-    ${flow}
-    ${v.CODIGO_AUTH?`<div class="alert ao" style="margin-bottom:11px"><span style="font-size:14px;flex-shrink:0">✅</span><div>Código de autorización: <strong style="font-family:var(--MONO)">${v.CODIGO_AUTH}</strong></div></div>`:''}
-    ${v.OBSERVACION?`<div class="alert aw" style="margin-bottom:11px"><span style="font-size:14px;flex-shrink:0">⚠</span><div>${v.OBSERVACION}</div></div>`:''}
-    ${e==='DENEGADO'?`<div class="alert ar" style="margin-bottom:11px"><span style="font-size:14px;flex-shrink:0">❌</span><div>Vuelo denegado. No proceder sin nueva autorización del Centro de Control.</div></div>`:''}
-    <div style="background:var(--BG);border:1px solid var(--G5);border-radius:var(--RAD2);padding:13px;font-size:12px;line-height:1.8;margin-bottom:12px">
-      <div style="font-weight:700;margin-bottom:6px;font-size:11px;color:var(--G3);letter-spacing:1px;text-transform:uppercase">Detalles del plan</div>
-      📅 ${fd(v.FECHA)} &nbsp; ⏰ ${v.HORA_INICIO||'--'} → ${v.HORA_FIN||'--'}<br>
-      🚁 ${v.RPA_MODELO||'--'} · S/N: ${v.RPA_SERIE||'--'}<br>
-      📏 Altura: ${v.ALTURA||'--'} m · Misión: ${v.MISION||'--'}<br>
-      ✈ ${v.PILOTO1||''}${v.PILOTO2?' · '+v.PILOTO2:''}<br>
-      🏢 ${v.EMPRESA||''} · ${v.GERENCIA||''}
-    </div>`;
+  document.getElementById('m-body').innerHTML=`${flow}${v.CODIGO_AUTH?`<div class="alert ao" style="margin-bottom:11px"><span style="font-size:14px;flex-shrink:0">✅</span><div>Código de autorización: <strong style="font-family:var(--MONO)">${v.CODIGO_AUTH}</strong></div></div>`:''}${v.OBSERVACION?`<div class="alert aw" style="margin-bottom:11px"><span style="font-size:14px;flex-shrink:0">⚠</span><div>${v.OBSERVACION}</div></div>`:''}${e==='DENEGADO'?`<div class="alert ar" style="margin-bottom:11px"><span style="font-size:14px;flex-shrink:0">❌</span><div>Vuelo denegado. No proceder sin nueva autorización.</div></div>`:''}<div style="background:var(--BG);border:1px solid var(--G5);border-radius:var(--RAD2);padding:13px;font-size:12px;line-height:1.8;margin-bottom:12px"><div style="font-weight:700;margin-bottom:6px;font-size:11px;color:var(--G3);letter-spacing:1px;text-transform:uppercase">Detalles del plan</div>📅 ${fd(v.FECHA)} &nbsp; ⏰ ${v.HORA_INICIO||'--'} → ${v.HORA_FIN||'--'}<br>🚁 ${v.RPA_MODELO||'--'} · S/N: ${v.RPA_SERIE||'--'}<br>📏 Altura: ${v.ALTURA||'--'} m · Misión: ${v.MISION||'--'}<br>✈ ${v.PILOTO1||''}${v.PILOTO2?' · '+v.PILOTO2:''}<br>🏢 ${v.EMPRESA||''} · ${v.GERENCIA||''}</div>`;
   document.getElementById('modal').classList.add('open');
 }
-function closeMo(e) { if(!e||e.target===document.getElementById('modal')) document.getElementById('modal').classList.remove('open'); }
+function closeMo(e){ if(!e||e.target===document.getElementById('modal')) document.getElementById('modal').classList.remove('open'); }
 
-// ══ UTILS ══
-function fd(d){if(!d)return'--';const s=d.toString(),p=s.split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:s;}
-function toast(msg, type='inf') {
+// ═══════════════════════════════════════════
+//  MAP
+// ═══════════════════════════════════════════
+function copyCoord(){ const txt=`${MAP_LAT}, ${MAP_LNG}`; if(navigator.clipboard){ navigator.clipboard.writeText(txt).then(()=>toast('📍 Coordenadas copiadas','ok')).catch(()=>toast(txt,'inf'));} else toast(txt,'inf'); }
+function openInGoogleMaps(){ window.open(`https://maps.google.com/?q=${MAP_LAT},${MAP_LNG}&z=15&t=k`,'_blank'); }
+
+// ═══════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════
+function fd(d){ if(!d)return'--'; const s=d.toString(),p=s.split('-'); return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:s; }
+function toast(msg, type='inf'){
   const el=document.getElementById('toast');
   const icons={ok:'✓',err:'✕',inf:'ℹ',warn:'⚠'};
   el.innerHTML=`<span>${icons[type]||'ℹ'}</span><span>${msg}</span>`;
   el.className=`toast t${type} show`;
-  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'), 3200);
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),3200);
 }
+function calcMins(hi,hf){ if(!hi||!hf)return 0; const [h1,m1]=hi.split(':').map(Number),[h2,m2]=hf.split(':').map(Number),diff=(h2*60+m2)-(h1*60+m1); return diff>0?diff:0; }
+function fmtMins(m){ if(!m)return'—'; if(m<60)return`${m} min`; return`${Math.floor(m/60)}h ${m%60}min`; }
 
-// ══════════════════════════════════════════════
-//  IA MODULE — SOLO ADMINISTRADOR
-// ══════════════════════════════════════════════
-let iaPeriodo = 'hoy';
+// ═══════════════════════════════════════════
+//  IA MODULE
+// ═══════════════════════════════════════════
+function selP(el,p){ document.querySelectorAll('#periodo-grid .pchip').forEach(c=>c.classList.remove('on')); el.classList.add('on'); iaPeriodo=p; }
 
-function syncIaAccess() {
-  // Muestra/oculta el tab IA y el contenido según sesión admin
-  const tabIA = document.getElementById('t5');
-  if(isAdm) {
-    tabIA.style.display = '';
-    document.getElementById('ia-lock').style.display  = 'none';
-    document.getElementById('ia-panel').style.display = 'block';
-  } else {
-    tabIA.style.display = 'none';
-    document.getElementById('ia-lock').style.display  = 'block';
-    document.getElementById('ia-panel').style.display = 'none';
-  }
-}
-
-function selP(el, p) {
-  document.querySelectorAll('#periodo-grid .pchip').forEach(c=>c.classList.remove('on'));
-  el.classList.add('on'); iaPeriodo = p;
-}
-
-// Calcula minutos de vuelo entre dos strings HH:MM
-function calcMins(hi, hf) {
-  if(!hi||!hf) return 0;
-  const [hh1,mm1]=hi.split(':').map(Number);
-  const [hh2,mm2]=hf.split(':').map(Number);
-  const diff = (hh2*60+mm2) - (hh1*60+mm1);
-  return diff > 0 ? diff : 0;
-}
-
-function fmtMins(m) {
-  if(!m) return '—';
-  if(m < 60) return `${m} min`;
-  return `${Math.floor(m/60)}h ${m%60}min`;
-}
-
-// Filtra vuelos según período seleccionado
-function filtrarPorPeriodo(lista) {
-  const hoy = new Date(); hoy.setHours(0,0,0,0);
-  return lista.filter(v => {
-    if(!v.FECHA) return iaPeriodo==='todo';
-    const fv = new Date(v.FECHA+'T00:00:00');
-    if(iaPeriodo==='hoy')   return fv.toDateString()===hoy.toDateString();
+function filtrarPorPeriodo(lista){
+  const hoy=new Date(); hoy.setHours(0,0,0,0);
+  return lista.filter(v=>{ if(!v.FECHA) return iaPeriodo==='todo'; const fv=new Date(v.FECHA+'T00:00:00');
+    if(iaPeriodo==='hoy') return fv.toDateString()===hoy.toDateString();
     if(iaPeriodo==='semana'){ const s=new Date(hoy); s.setDate(hoy.getDate()-7); return fv>=s; }
-    if(iaPeriodo==='mes')   { const m=new Date(hoy); m.setDate(hoy.getDate()-30); return fv>=m; }
-    return true; // todo
-  });
+    if(iaPeriodo==='mes'){ const m=new Date(hoy); m.setDate(hoy.getDate()-30); return fv>=m; }
+    return true; });
 }
 
-async function generarInforme() {
-  if(!isAdm){ toast('Acceso solo para coordinadores','err'); return; }
-
-  document.getElementById('ia-result-wrap').style.display = 'none';
-  document.getElementById('ia-generating').style.display  = 'block';
-  document.getElementById('btn-generar').disabled = true;
-
-  const steps = ['Filtrando registros por período…','Calculando tiempos por zona…','Analizando patrones operacionales…','Generando informe con IA…'];
-  let si = 0;
-  const stepEl = document.getElementById('ia-gen-step');
-  const stepTimer = setInterval(()=>{ stepEl.textContent = steps[Math.min(si++, steps.length-1)]; }, 900);
-
-  // ── Calcular datos reales ──
-  const lista = filtrarPorPeriodo(vuelos);
-  const periodoLabel = {hoy:'Hoy',semana:'Última semana',mes:'Último mes',todo:'Todos los registros'}[iaPeriodo];
-
-  // Totales
-  const total   = lista.length;
-  const aprobados  = lista.filter(v=>v.ESTADO==='APROBADO'||v.ESTADO==='CONCLUIDO').length;
-  const denegados  = lista.filter(v=>v.ESTADO==='DENEGADO').length;
-  const pendientes = lista.filter(v=>v.ESTADO==='PENDIENTE').length;
-  const conCL      = lista.filter(v=>v.CHECKLIST_OK==='SI').length;
-
-  // Minutos totales y por zona
-  let minTotales = 0;
-  const zonaMap = {};
-  lista.forEach(v => {
-    const mins = calcMins(v.HORA_INICIO, v.HORA_FIN);
-    minTotales += mins;
-    const zona = v.LUGAR || 'Sin especificar';
-    if(!zonaMap[zona]) zonaMap[zona] = { vuelos:0, mins:0 };
-    zonaMap[zona].vuelos++;
-    zonaMap[zona].mins += mins;
-  });
-
-  // Ordenar zonas por vuelos desc
-  const zonas = Object.entries(zonaMap).sort((a,b)=>b[1].vuelos-a[1].vuelos);
-  const maxVuelos = zonas.length ? zonas[0][1].vuelos : 1;
-
-  // Construir JSON para la IA
-  const datosParaIA = {
-    periodo: periodoLabel,
-    totalVuelos: total,
-    aprobados, denegados, pendientes,
-    conChecklist: conCL,
-    minutosVuelo: minTotales,
-    tasaAprobacion: total ? Math.round(aprobados/total*100) : 0,
-    porZona: zonas.map(([z,d])=>({ zona:z, vuelos:d.vuelos, minutos:d.mins })),
-    pilotosUnicos: [...new Set(lista.map(v=>v.PILOTO1).filter(Boolean))].length,
-    misionesUnicas: [...new Set(lista.map(v=>v.MISION).filter(Boolean))],
-  };
-
-  // ── Llamada a Claude API ──
-  let textoIA = '';
+async function generarInforme(){
+  if(!isAdm){toast('Acceso solo para coordinadores','err');return;}
+  document.getElementById('ia-result-wrap').style.display='none';
+  document.getElementById('ia-generating').style.display='block';
+  document.getElementById('btn-generar').disabled=true;
+  const steps=['Filtrando registros…','Calculando tiempos por zona…','Analizando patrones…','Generando informe con IA…'];
+  let si=0; const stepEl=document.getElementById('ia-gen-step');
+  const stepTimer=setInterval(()=>{stepEl.textContent=steps[Math.min(si++,steps.length-1)];},900);
+  const lista=filtrarPorPeriodo(vuelos);
+  const periodoLabel={hoy:'Hoy',semana:'Última semana',mes:'Último mes',todo:'Todos los registros'}[iaPeriodo];
+  const total=lista.length;
+  const aprobados=lista.filter(v=>v.ESTADO==='APROBADO'||v.ESTADO==='CONCLUIDO').length;
+  const denegados=lista.filter(v=>v.ESTADO==='DENEGADO').length;
+  const pendientes=lista.filter(v=>v.ESTADO==='PENDIENTE').length;
+  const conCL=lista.filter(v=>v.CHECKLIST_OK==='SI').length;
+  let minTotales=0; const zonaMap={};
+  lista.forEach(v=>{ const mins=calcMins(v.HORA_INICIO,v.HORA_FIN); minTotales+=mins; const zona=v.LUGAR||'Sin especificar'; if(!zonaMap[zona])zonaMap[zona]={vuelos:0,mins:0}; zonaMap[zona].vuelos++; zonaMap[zona].mins+=mins; });
+  const zonas=Object.entries(zonaMap).sort((a,b)=>b[1].vuelos-a[1].vuelos);
+  const maxVuelos=zonas.length?zonas[0][1].vuelos:1;
+  const datosParaIA={periodo:periodoLabel,totalVuelos:total,aprobados,denegados,pendientes,conChecklist:conCL,minutosVuelo:minTotales,tasaAprobacion:total?Math.round(aprobados/total*100):0,porZona:zonas.map(([z,d])=>({zona:z,vuelos:d.vuelos,minutos:d.mins})),pilotosUnicos:[...new Set(lista.map(v=>v.PILOTO1).filter(Boolean))].length,misionesUnicas:[...new Set(lista.map(v=>v.MISION).filter(Boolean))]};
+  let textoIA='';
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages:[{
-          role:'user',
-          content:`Eres el asistente de operaciones RPAS de Minera Las Bambas (MMG), Perú. Genera un informe operacional conciso en español para el Coordinador del Centro de Control, basado en estos datos reales del sistema:
-
-${JSON.stringify(datosParaIA, null, 2)}
-
-El informe debe tener exactamente estas 4 secciones con sus títulos en mayúsculas:
-
-RESUMEN EJECUTIVO
-(2-3 oraciones resumiendo el período, total de vuelos y tiempo de operación total)
-
-OPERACIONES POR ZONA
-(analiza las zonas con más actividad y tiempo acumulado, señala la zona más operativa)
-
-CUMPLIMIENTO OPERACIONAL
-(evalúa tasa de aprobación, checklist completados, vuelos denegados si hay; menciona si hay incidencias)
-
-RECOMENDACIONES
-(2-3 recomendaciones concretas y accionables basadas en los datos, orientadas a mejorar eficiencia o seguridad)
-
-Sé directo, profesional y usa los datos reales. No inventes datos. Si el período no tiene vuelos, indícalo claramente.`
-        }]
-      })
-    });
-    const data = await resp.json();
-    textoIA = data.content?.[0]?.text || '';
-  } catch(e) {
-    textoIA = 'Error al conectar con el servicio de IA. Verifica tu conexión e intenta nuevamente.';
-  }
-
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:`Eres el asistente de operaciones RPAS de Minera Las Bambas (MMG), Perú. Genera un informe operacional conciso en español para el Coordinador del Centro de Control, basado en estos datos reales:\n\n${JSON.stringify(datosParaIA,null,2)}\n\nEl informe debe tener exactamente estas 4 secciones con sus títulos en mayúsculas:\n\nRESUMEN EJECUTIVO\n(2-3 oraciones resumiendo el período)\n\nOPERACIONES POR ZONA\n(analiza las zonas con más actividad)\n\nCUMPLIMIENTO OPERACIONAL\n(evalúa tasa de aprobación, checklist, denegados)\n\nRECOMENDACIONES\n(2-3 recomendaciones accionables)\n\nSé directo y profesional. No inventes datos.`}]})});
+    const data=await resp.json(); textoIA=data.content?.[0]?.text||'';
+  } catch(e){ textoIA='Error al conectar con el servicio de IA. Verifica tu conexión e intenta nuevamente.'; }
   clearInterval(stepTimer);
-  document.getElementById('ia-generating').style.display = 'none';
-  document.getElementById('btn-generar').disabled = false;
-
-  // ── Renderizar métricas ──
-  const tasaColor = datosParaIA.tasaAprobacion>=80?'var(--GRN)':datosParaIA.tasaAprobacion>=50?'var(--YLW)':'var(--R)';
-  document.getElementById('ia-metrics').innerHTML = `
-    <div class="metric-mini">
-      <div class="metric-mini-n" style="color:var(--R)">${total}</div>
-      <div class="metric-mini-l">Vuelos</div>
-    </div>
-    <div class="metric-mini">
-      <div class="metric-mini-n" style="color:${tasaColor}">${datosParaIA.tasaAprobacion}%</div>
-      <div class="metric-mini-l">Aprobación</div>
-    </div>
-    <div class="metric-mini">
-      <div class="metric-mini-n" style="color:var(--BLU);font-size:16px">${fmtMins(minTotales)}</div>
-      <div class="metric-mini-l">T. vuelo</div>
-    </div>`;
-
-  // ── Renderizar tabla de zonas ──
-  if(zonas.length) {
-    document.getElementById('ia-zonas-table').innerHTML = zonas.map(([z,d])=>`
-      <div class="zona-row">
-        <div class="zona-name">${z}</div>
-        <div><div class="zona-bar-wrap"><div class="zona-bar" style="width:${Math.round(d.vuelos/maxVuelos*100)}%"></div></div></div>
-        <div class="zona-count">${d.vuelos} vuelo${d.vuelos!==1?'s':''}</div>
-        <div class="zona-time">⏱ ${fmtMins(d.mins)}</div>
-      </div>`).join('');
-  } else {
-    document.getElementById('ia-zonas-table').innerHTML = `<div style="padding:16px;text-align:center;color:var(--G4);font-size:12px">Sin registros en este período</div>`;
-  }
-
-  // ── Renderizar texto IA formateado ──
-  const secciones = ['RESUMEN EJECUTIVO','OPERACIONES POR ZONA','CUMPLIMIENTO OPERACIONAL','RECOMENDACIONES'];
-  let html = textoIA;
-  secciones.forEach(s => {
-    html = html.replace(new RegExp(s,'g'), `<div class="ia-section-title">${s}</div>`);
-  });
-  // Convertir líneas con - o • en bullets
-  html = html.split('\n').map(l => {
-    const t = l.trim();
-    if(!t) return '<br>';
-    if(t.startsWith('-')||t.startsWith('•')) return `<div class="ia-bullet">${t.replace(/^[-•]\s*/,'')}</div>`;
-    if(t.startsWith('<div class="ia-section-title">')) return `<div class="ia-section" style="margin-top:14px">${t}`;
-    return `<div class="ia-para">${t}</div>`;
-  }).join('');
-
-  document.getElementById('ia-texto').innerHTML = html;
-  document.getElementById('ia-ts').textContent = new Date().toLocaleString('es-PE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
-  document.getElementById('ia-result-wrap').style.display = 'block';
+  document.getElementById('ia-generating').style.display='none';
+  document.getElementById('btn-generar').disabled=false;
+  const tasaColor=datosParaIA.tasaAprobacion>=80?'var(--GRN)':datosParaIA.tasaAprobacion>=50?'var(--YLW)':'var(--R)';
+  document.getElementById('ia-metrics').innerHTML=`<div class="metric-mini"><div class="metric-mini-n" style="color:var(--R)">${total}</div><div class="metric-mini-l">Vuelos</div></div><div class="metric-mini"><div class="metric-mini-n" style="color:${tasaColor}">${datosParaIA.tasaAprobacion}%</div><div class="metric-mini-l">Aprobación</div></div><div class="metric-mini"><div class="metric-mini-n" style="color:var(--BLU);font-size:16px">${fmtMins(minTotales)}</div><div class="metric-mini-l">T. vuelo</div></div>`;
+  if(zonas.length){ document.getElementById('ia-zonas-table').innerHTML=zonas.map(([z,d])=>`<div class="zona-row"><div class="zona-name">${z}</div><div><div class="zona-bar-wrap"><div class="zona-bar" style="width:${Math.round(d.vuelos/maxVuelos*100)}%"></div></div></div><div class="zona-count">${d.vuelos} vuelo${d.vuelos!==1?'s':''}</div><div class="zona-time">⏱ ${fmtMins(d.mins)}</div></div>`).join('');
+  } else { document.getElementById('ia-zonas-table').innerHTML=`<div style="padding:16px;text-align:center;color:var(--G4);font-size:12px">Sin registros en este período</div>`; }
+  const secciones=['RESUMEN EJECUTIVO','OPERACIONES POR ZONA','CUMPLIMIENTO OPERACIONAL','RECOMENDACIONES'];
+  let html=textoIA;
+  secciones.forEach(s=>{ html=html.replace(new RegExp(s,'g'),`<div class="ia-section-title">${s}</div>`); });
+  html=html.split('\n').map(l=>{ const t=l.trim(); if(!t)return'<br>'; if(t.startsWith('-')||t.startsWith('•'))return`<div class="ia-bullet">${t.replace(/^[-•]\s*/,'')}</div>`; if(t.startsWith('<div class="ia-section-title">'))return`<div class="ia-section" style="margin-top:14px">${t}`; return`<div class="ia-para">${t}</div>`; }).join('');
+  document.getElementById('ia-texto').innerHTML=html;
+  document.getElementById('ia-ts').textContent=new Date().toLocaleString('es-PE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  document.getElementById('ia-result-wrap').style.display='block';
 }
 
-function copiarInforme() {
-  const txt = document.getElementById('ia-texto')?.innerText || '';
-  const zonas = document.getElementById('ia-zonas-table')?.innerText || '';
-  navigator.clipboard.writeText(`INFORME OPERACIONAL RPAS — MMG LAS BAMBAS\n${'─'.repeat(40)}\n\nZONAS:\n${zonas}\n\n${txt}`)
-    .then(()=>toast('Informe copiado al portapapeles','ok'))
-    .catch(()=>toast('No se pudo copiar','err'));
+function copiarInforme(){
+  const txt=document.getElementById('ia-texto')?.innerText||'';
+  const zonas=document.getElementById('ia-zonas-table')?.innerText||'';
+  navigator.clipboard.writeText(`INFORME OPERACIONAL RPAS — MMG LAS BAMBAS\n${'─'.repeat(40)}\n\nZONAS:\n${zonas}\n\n${txt}`).then(()=>toast('Informe copiado al portapapeles','ok')).catch(()=>toast('No se pudo copiar','err'));
+}
+
+// ═══════════════════════════════════════════
+//  EXPORTAR PDF
+// ═══════════════════════════════════════════
+function exportarPDF() {
+  if(typeof jspdf === 'undefined' && typeof window.jspdf === 'undefined') {
+    toast('Librería PDF no disponible','err'); return;
+  }
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    const W = doc.internal.pageSize.getWidth();
+    let y = 18;
+
+    // ── Encabezado ──
+    doc.setFillColor(200,16,46); doc.rect(0,0,W,14,'F');
+    doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(12);
+    doc.text('MMG · MINERA LAS BAMBAS',10,9);
+    doc.setFontSize(8); doc.setFont('helvetica','normal');
+    doc.text('RPAS OPS · GGO-PI-PG-003 · Centro de Control',10,13);
+    doc.setFontSize(9); doc.text(new Date().toLocaleString('es-PE'),W-10,9,{align:'right'});
+    y = 22;
+
+    // ── Título ──
+    doc.setTextColor(26,29,35); doc.setFont('helvetica','bold'); doc.setFontSize(16);
+    doc.text('INFORME OPERACIONAL RPAS', W/2, y, {align:'center'}); y+=8;
+    doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(107,114,128);
+    const tsEl = document.getElementById('ia-ts');
+    doc.text(tsEl?tsEl.textContent:'', W/2, y, {align:'center'}); y+=10;
+
+    // ── Línea separadora ──
+    doc.setDrawColor(200,16,46); doc.setLineWidth(0.5); doc.line(10, y, W-10, y); y+=8;
+
+    // ── Métricas ──
+    const metricsEl = document.getElementById('ia-metrics');
+    if(metricsEl){
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(107,114,128);
+      doc.text('MÉTRICAS DEL PERÍODO', 10, y); y+=5;
+      const nums = metricsEl.querySelectorAll('.metric-mini-n');
+      const lbls = metricsEl.querySelectorAll('.metric-mini-l');
+      const bw=55; const colors=[[200,16,46],[37,99,235],[0,135,90]];
+      nums.forEach((n,i)=>{
+        const x=10+i*bw;
+        doc.setFillColor(248,249,250); doc.roundedRect(x,y,bw-3,14,2,2,'F');
+        doc.setTextColor(...colors[i]); doc.setFont('helvetica','bold'); doc.setFontSize(14);
+        doc.text(n.textContent, x+(bw-3)/2, y+8, {align:'center'});
+        doc.setTextColor(107,114,128); doc.setFont('helvetica','normal'); doc.setFontSize(7);
+        doc.text(lbls[i]?lbls[i].textContent:'', x+(bw-3)/2, y+13, {align:'center'});
+      }); y+=20;
+    }
+
+    // ── Zonas ──
+    const zonasEl = document.getElementById('ia-zonas-table');
+    if(zonasEl && zonasEl.innerText.trim()){
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(107,114,128);
+      doc.text('OPERACIONES POR ZONA', 10, y); y+=5;
+      const rows = zonasEl.querySelectorAll('.zona-row');
+      rows.forEach((row, idx)=>{
+        if(idx%2===0){doc.setFillColor(248,249,250);doc.rect(10,y-3,W-20,6,'F');}
+        const name=row.querySelector('.zona-name')?.textContent||'';
+        const count=row.querySelector('.zona-count')?.textContent||'';
+        const time=row.querySelector('.zona-time')?.textContent||'';
+        doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(26,29,35);
+        doc.text(name.length>28?name.substring(0,28)+'…':name, 12, y);
+        doc.text(count, W-40, y, {align:'right'});
+        doc.text(time, W-12, y, {align:'right'});
+        y+=6; if(y>270){doc.addPage();y=20;}
+      }); y+=4;
+    }
+
+    // ── Texto IA ──
+    const textoEl = document.getElementById('ia-texto');
+    if(textoEl){
+      doc.setDrawColor(200,16,46); doc.line(10,y,W-10,y); y+=6;
+      const lines = textoEl.innerText.split('\n').filter(l=>l.trim());
+      lines.forEach(line=>{
+        if(y>270){doc.addPage();y=20;}
+        const isTitle = line.toUpperCase()===line && line.length<50 && line.trim().length>4;
+        if(isTitle){
+          y+=3; doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(200,16,46);
+          doc.text(line, 10, y); y+=5; doc.setDrawColor(200,16,46,.3); doc.line(10,y,W-10,y); y+=3;
+        } else {
+          doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(26,29,35);
+          const wrapped = doc.splitTextToSize(line.startsWith('-')||line.startsWith('▸')?'  '+line:line, W-22);
+          wrapped.forEach(wl=>{ if(y>270){doc.addPage();y=20;} doc.text(wl,10,y); y+=5; });
+        }
+      });
+    }
+
+    // ── Footer ──
+    const pages = doc.internal.getNumberOfPages();
+    for(let i=1;i<=pages;i++){
+      doc.setPage(i);
+      doc.setFillColor(248,249,250); doc.rect(0,287,W,10,'F');
+      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(156,163,175);
+      doc.text('RPAS OPS · MMG Las Bambas · Confidencial — Uso Interno', W/2, 293, {align:'center'});
+      doc.text(`Pág. ${i} / ${pages}`, W-12, 293, {align:'right'});
+    }
+
+    doc.save(`Informe_RPAS_OPS_${new Date().toISOString().slice(0,10)}.pdf`);
+    toast('📄 PDF generado y descargado','ok');
+  } catch(e){
+    console.error(e);
+    toast('Error al generar PDF: '+e.message,'err');
+  }
 }
 </script>
 </body>
